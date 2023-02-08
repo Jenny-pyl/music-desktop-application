@@ -1,0 +1,90 @@
+.layouts {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+
+  :global {
+    .header {
+      height: 50px;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      // background-color: rgba($color: #000000, $alpha: 1.0);
+      background-color: rgb(251, 249, 249);
+      display: flex;
+
+      .h-left {
+        box-sizing: border-box;
+        width: 25%;
+        height: 100%;
+        line-height: 50px;
+        text-align: right;
+        padding-right: 2px;
+      }
+      .h-right {
+        box-sizing: border-box;
+        width: 75%;
+        padding-right: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+    }
+
+    .middle {
+      width: 100%;
+      position: absolute;
+      top: 50px;
+      bottom: 60px;
+
+      .sider {
+        height: 100%;
+        width: 25%;
+        float: left;
+        margin-bottom: 40px;
+        overflow: auto;
+        border-right: 1px solid rgba(5, 5, 5, 0.06);
+
+        .avator {
+          margin: 8px;
+        }
+
+        .ant-menu-root {
+          border: 0;
+        }
+      }
+
+      .content {
+        height: 100%;
+        margin-left: 0;
+        overflow: scroll;
+      }
+    }
+
+    .footer {
+      height: 60px;
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      .process {
+        height: 3px;
+        width: 100%;
+        background-color: #237804;
+      }
+      .bar {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 10px;
+
+        .b-center {
+          display: flex;
+          width: 20%;
+          justify-content: space-around;
+          align-items: center;
+        }
+      }
+    }
+  }
+}
