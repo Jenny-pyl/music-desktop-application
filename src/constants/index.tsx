@@ -22,8 +22,8 @@ export const menuItems: MenuProps['items'] = [
     icon: <ShouyinjiIcon />,
   },
   {
-    key: '/focus',
-    label: '关注',
+    key: '/singer',
+    label: '歌手',
     icon: <GuanzhuIcon />,
   },
   { type: 'divider' },

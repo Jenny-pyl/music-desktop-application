@@ -5,6 +5,7 @@ import {
   Space,
   Input,
   Avatar,
+  MenuProps,
 } from 'antd'
 import {
   LeftOutlined,
@@ -21,14 +22,21 @@ import {
   XiayishouIcon,
   AixinIcon,
 } from '@/components/icons'
-import { Outlet } from "react-router-dom"
+import { Outlet, useNavigate } from "react-router-dom"
 import { menuItems } from '@/constants'
 import styles from './index.module.scss'
 
 const { Search } = Input;
 
 const Layouts: FC = () => {
+  const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const menuItemClick: MenuProps['onClick'] = (e) => {
+    const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
+    navigate(pathname);
+  }
+
   return (
     <div className={styles.layouts}>
       <div className="header">
@@ -57,10 +65,11 @@ const Layouts: FC = () => {
           </div>
           <Menu
             items={menuItems}
+            onClick={menuItemClick}
           />
         </div>
         <div className="content">
-          {/* <Outlet /> */}
+          <Outlet />
         </div>
       </div>
       <div className="footer">
