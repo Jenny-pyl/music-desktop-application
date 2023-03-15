@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "antd": "^5.1.7",
-    "react-router-dom": "^6.8.0"
+    "react-router-dom": "^6.8.0",
+    "zustand": "^4.3.6"
   },
   "devDependencies": {
     "@types/react": "^18.0.21",
