@@ -1,5 +1,51 @@
 .login {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('/src/assets/imgs/login_bg.svg');
+  background-position-y: 100px;
+  background-repeat: no-repeat;
+  background-size: 50%;
+  display: flex;
   :global {
-    
+    .left {
+      width: 50%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.3);
+    }
+
+    .right {
+      width: 50%;
+      height: 100%;
+      position: relative;
+
+      .title {
+        font-size: 27px;
+        font-weight: 700;
+        position: absolute;
+        top: 23%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .content {
+        box-sizing: border-box;
+        width: 300px;
+        height: 200px;
+        padding: 20px;
+        border: 1px solid rgba(0,0,0,0.3);
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        .btns {
+          text-align: right !important;
+        }
+      }
+    }
   }
 }
