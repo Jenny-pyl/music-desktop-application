@@ -4,8 +4,8 @@
 {
   appId: "YourAppID",
   productName: "YourAppName",
-  copyright: "Copyright © 2022 ${author}",
-  asar: true,
+  copyright: "Copyright © 2023 ${author}",
+  asar: false,
   directories: {
     output: "release/${version}",
     buildResources: "electron/resources",
