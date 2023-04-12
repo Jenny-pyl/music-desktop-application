@@ -1,3 +1,9 @@
+import { app, BrowserWindow, shell } from 'electron'
+import { release } from 'os'
+import path from 'path'
+import { Sql } from './sql'
+import { Ipc } from './ipc'
+
 // The built directory structure
 //
 // ├─┬ dist-electron
@@ -8,13 +14,9 @@
 // ├─┬ dist
 // │ └── index.html    > Electron-Renderer
 //
-process.env.DIST_ELECTRON = join(__dirname, '../..')
-process.env.DIST = join(process.env.DIST_ELECTRON, '../dist')
-process.env.PUBLIC = app.isPackaged ? process.env.DIST : join(process.env.DIST_ELECTRON, '../public')
-
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
-import { release } from 'os'
-import { join } from 'path'
+process.env.DIST_ELECTRON = path.join(__dirname, '../..')
+process.env.DIST = path.join(process.env.DIST_ELECTRON, '../dist')
+process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST_ELECTRON, '../public')
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration()
@@ -28,28 +30,25 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 let win: BrowserWindow | null = null
-// Here, you can also use other preload
-const preload = join(__dirname, '../preload/index.js')
-const url = process.env.VITE_DEV_SERVER_URL
-const indexHtml = join(process.env.DIST, 'index.html')
+let sql: Sql
+let ipc: Ipc
 
 async function createWindow() {
   win = new BrowserWindow({
     title: 'Main window',
-    icon: join(process.env.PUBLIC, 'favicon.svg'),
+    icon: path.join(process.env.PUBLIC, 'favicon.svg'),
     webPreferences: {
-      preload,
-      nodeIntegration: true,
+      preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: false,
     },
   })
 
   if (process.env.VITE_DEV_SERVER_URL) { // electron-vite-vue#298
-    win.loadURL(url)
+    win.loadURL(process.env.VITE_DEV_SERVER_URL)
     // Open devTool if the app is not packaged
     win.webContents.openDevTools()
   } else {
-    win.loadFile(indexHtml)
+    win.loadFile(path.join(process.env.DIST, 'index.html'))
   }
 
   // Test actively push message to the Electron-Renderer
@@ -64,7 +63,15 @@ async function createWindow() {
   })
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+
+  sql = new Sql()
+  ipc = new Ipc(
+    win!,
+    sql,
+  )
+})
 
 app.on('window-all-closed', () => {
   win = null
@@ -85,23 +92,5 @@ app.on('activate', () => {
     allWindows[0].focus()
   } else {
     createWindow()
-  }
-})
-
-// new window example arg: new windows url
-ipcMain.handle('open-win', (event, arg) => {
-  const childWindow = new BrowserWindow({
-    webPreferences: {
-      preload,
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  })
-
-  if (app.isPackaged) {
-    childWindow.loadFile(indexHtml, { hash: arg })
-  } else {
-    childWindow.loadURL(`${url}#${arg}`)
-    // childWindow.webContents.openDevTools({ mode: "undocked", activate: true })
   }
 })

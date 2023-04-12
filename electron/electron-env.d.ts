@@ -9,3 +9,8 @@ declare namespace NodeJS {
     PUBLIC: string
   }
 }
+
+interface Window {
+  // 渲染进程使用 `window.ipcRenderer` 时代码提示
+  ipcRenderer: import('electron').IpcRenderer
+}
