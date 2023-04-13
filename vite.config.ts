@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
+import pkg from './package.json'
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -27,6 +28,9 @@ export default defineConfig(() => {
             build: {
               minify: false,
               outDir: 'dist-electron/main',
+              rollupOptions: {
+                external: Object.keys(pkg.dependencies),
+              },
             },
             resolve: {
               alias: { '@common': path.join(__dirname, 'common') },
@@ -40,6 +44,9 @@ export default defineConfig(() => {
             build: {
               minify: false,
               outDir: 'dist-electron/preload',
+              rollupOptions: {
+                external: Object.keys(pkg.dependencies),
+              },
             },
             resolve: {
               alias: { '@common': path.join(__dirname, 'common') },
