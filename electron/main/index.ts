@@ -29,9 +29,46 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0)
 }
 
+// ----------------------------------------------------------------------
+
 let win: BrowserWindow | null = null
 let sql: Sql
 let ipc: Ipc
+
+app
+  // 一切就绪，启动 Electron 应用
+  .whenReady()
+  // 应用入口，且只会执行一次
+  // 在这里写一些初始化逻辑
+  .then(() => {
+    createWindow()
+
+    sql = Sql.getInstance()
+    ipc = new Ipc(
+      win!,
+      sql,
+    )
+  })
+
+app.on('window-all-closed', () => {
+  // 当所有的窗口被关闭了需要将 win=null 回收内存
+  win = null
+  // 非 Mac(darwin) 电脑关闭所有窗口后应用退出，Mac 电脑关闭所有窗口后应用还是会在任务栏存活
+  // 这里的设计仅仅是符让应用合用户使用 Windows、Mac 的习惯而已
+  if (process.platform !== 'darwin') app.quit()
+})
+
+// 鼠标点击任务栏的应用图标触发
+app.on('activate', () => {
+  const allWindows = BrowserWindow.getAllWindows()
+  if (allWindows.length) {
+    // 如果有已经打开的窗口(只是最小化状态或失焦状态)，重新拉起打开过的窗口
+    allWindows[0].focus()
+  } else {
+    // 没有任何打开过的窗口，创建一个新的窗口
+    createWindow()
+  }
+})
 
 async function createWindow() {
   win = new BrowserWindow({
@@ -43,54 +80,19 @@ async function createWindow() {
     },
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) { // electron-vite-vue#298
+  if (process.env.VITE_DEV_SERVER_URL) {
+    // 开发期间加载 http://localhost:port
     win.loadURL(process.env.VITE_DEV_SERVER_URL)
-    // Open devTool if the app is not packaged
+    // 开发模式自动打开 Devtools
     win.webContents.openDevTools()
   } else {
+    // 构建后加载文件真实路径
     win.loadFile(path.join(process.env.DIST, 'index.html'))
   }
 
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
-
-  // Make all links open with the browser, not with the application
+  // 防止页面中的 <a/> 标签点击调出新窗口，对于桌面应用来说很别扭
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https:')) shell.openExternal(url)
     return { action: 'deny' }
   })
 }
-
-app.whenReady().then(() => {
-  createWindow()
-
-  sql = new Sql()
-  ipc = new Ipc(
-    win!,
-    sql,
-  )
-})
-
-app.on('window-all-closed', () => {
-  win = null
-  if (process.platform !== 'darwin') app.quit()
-})
-
-app.on('second-instance', () => {
-  if (win) {
-    // Focus on the main window if the user tried to open another
-    if (win.isMinimized()) win.restore()
-    win.focus()
-  }
-})
-
-app.on('activate', () => {
-  const allWindows = BrowserWindow.getAllWindows()
-  if (allWindows.length) {
-    allWindows[0].focus()
-  } else {
-    createWindow()
-  }
-})
