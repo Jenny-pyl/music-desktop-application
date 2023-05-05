@@ -4,7 +4,8 @@ import { RouterProvider } from 'react-router-dom'
 import router from './routes/router'
 import './ipc'
 
-import './main.css'
+import 'antd/dist/reset.css'
+import './main.scss'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ConfigProvider

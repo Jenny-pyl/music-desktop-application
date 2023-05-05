@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { release } from 'os'
 import path from 'path'
+import { initWebRequest } from './web-request'
 import { Sql } from './sql'
 import { Ipc } from './ipc'
 
@@ -43,6 +44,7 @@ app
   .then(() => {
     createWindow()
 
+    initWebRequest()
     sql = Sql.getInstance()
     ipc = new Ipc(
       win!,
@@ -77,6 +79,7 @@ async function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: false,
+      webSecurity: false,
     },
   })
 

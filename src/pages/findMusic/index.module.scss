@@ -1,5 +1,45 @@
 .findMusic {
   :global {
-    
+    .category-list {}
+
+    .category-list-item {
+      width: 140px;
+      overflow: hidden;
+      margin: 0 3.5px 10px;
+      border-radius: 4px;
+      border: 1px solid #efefef;
+      transition: 400ms;
+      cursor: pointer;
+
+      &:hover {
+        border-color: #237804;
+
+        img {
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    .category-cover-img {
+      position: relative;
+      padding-bottom: 100%; // 得到一个自适应宽度的正方形
+      overflow: hidden;
+
+      img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        object-fit: contain;
+        object-position: center;
+        transition: 400ms;
+      }
+    }
+
+    .category-title {
+      padding: 7px 4px;
+      font-size: 12px;
+      color: #666;
+    }
   }
 }
