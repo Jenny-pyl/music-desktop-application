@@ -1,15 +1,33 @@
 import { FC } from 'react'
-import { Button, Input, Form } from 'antd'
+import { Outlet, useNavigate } from "react-router-dom"
+import { Button, Input, Form, message } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import style from './index.module.scss'
+import { IPC } from '@common/constants';
+import { useUserStore } from '@/store';
 
 const { Password } = Input;
 
 const login: FC = () => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const { setUser } = useUserStore();
 
   const submit = async () => {
-    await form.validateFields()
+    const formData = await form.validateFields();
+    window.ipcRenderer.invoke(IPC.登录, formData).then(res => {
+      if(res.code === 0) {
+        message.error(res.msg);
+      } else {
+        message.success({
+          content: res.msg,
+          onClose() {
+            setUser(res.data);
+            navigate('/')
+          }
+        });
+      }
+    })
   }
 
   return <div className={style.login}>

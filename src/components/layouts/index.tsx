@@ -30,7 +30,7 @@ import styles from './index.module.scss'
 const { Search } = Input;
 
 const Layouts: FC = () => {
-  const useInfo = useUserStore((state) => state.user)
+  const { user } = useUserStore()
   const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -43,13 +43,15 @@ const Layouts: FC = () => {
     navigate('/login')
   }
 
+  console.log('user', user);
+
   return (
     <div className={styles.layouts}>
       <div className="header">
         <div className="h-left">
           <Space>
-            <Button shape='circle' icon={<LeftOutlined />} size='small' />
-            <Button shape='circle' icon={<RightOutlined />} size='small' />
+            <LeftOutlined />
+            <RightOutlined />
           </Space>
         </div>
         <div className="h-right">
@@ -64,9 +66,9 @@ const Layouts: FC = () => {
         <div className="sider">
           <div className="avator">
             {
-              useInfo ? (<Space>
-                <Avatar size="large" icon={<UserOutlined />} src={useInfo.imgUrl}/>
-                <span>{useInfo.nickname}</span>
+              user ? (<Space>
+                <Avatar size="large" icon={<UserOutlined />} src={user.imgUrl}/>
+                <span>{user.username}</span>
                 <CaretRightOutlined /> 
               </Space>) : (<Space onClick={loginRedirect}>
                 <Avatar size="large" icon={<UserOutlined />} />

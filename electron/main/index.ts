@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { release } from 'os'
 import path from 'path'
 import { Sql } from './sql'

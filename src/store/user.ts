@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 export type UserInfo = {
   id: string;
-  nickname: string;
+  username: string;
   imgUrl: string;
   age: number;
   gender: 0 | 1;
@@ -11,15 +11,12 @@ export type UserInfo = {
   level: number;
 }
 
-type State = {
+type Store = {
   user: UserInfo | null;
-}
-
-type Action = {
   setUser: (user: UserInfo | null) => void;
 }
 
-export const useUserStore = create<State & Action >((set) => ({
+export const useUserStore = create<Store>()((set) => ({
   user: null,
-  setUser: (newUser: UserInfo | null) => set((state) => ({user: newUser}))
+  setUser: (newUser: UserInfo | null) => set(() => ({user: newUser}))
 }))
