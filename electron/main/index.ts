@@ -82,6 +82,7 @@ async function createWindow() {
       contextIsolation: false,
       webSecurity: false,
     },
+    titleBarStyle: 'hiddenInset',
   })
 
   if (process.env.VITE_DEV_SERVER_URL) {

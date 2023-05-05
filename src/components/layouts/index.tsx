@@ -52,7 +52,7 @@ const Layouts: FC = () => {
         className='dot'
         style={{ background: key }}
         onClick={() => setColor(key)}
-      >{ color === key ? <CheckOutlined /> : null}</div>
+      >{color === key ? <CheckOutlined /> : null}</div>
       <div>{label}</div>
     </div>,
     key
@@ -60,14 +60,16 @@ const Layouts: FC = () => {
 
   return (
     <div className={styles.layouts}>
-      <div className="header" style={{ background: color}}>
-        <div className="h-left">
+      <div className="header d-flex" style={{ background: color }}>
+        <div className="h-left d-flex">
+          <div className='flex-fill app-drag' />
           <Space>
             <LeftOutlined />
             <RightOutlined />
           </Space>
         </div>
-        <div className="h-right">
+        <div className="h-right d-flex align-items-center">
+          <div className='flex-fill h-100 app-drag' />
           <Search className='search' />
           <ShezhiIcon className='setting' />
           <Dropdown
@@ -104,7 +106,7 @@ const Layouts: FC = () => {
         </div>
       </div>
       <div className="footer">
-        <div className="process" style={{ background: color}}/>
+        <div className="process" style={{ background: color }} />
         <div className='bar'>
           <div className="b-left">
             <AixinIcon />
