@@ -62,3 +62,26 @@ export const menuItems: MenuProps['items'] = [
     ]
   }
 ]
+
+export const themeItems: {label: string, key: string}[] = [
+  {
+    label: '绿',
+    key: '#73d13d',
+  },
+  {
+    label: '橙',
+    key: '#ff7a45',
+  },
+  {
+    label: '黄',
+    key: '#ffc53d',
+  },
+  {
+    label: '玫',
+    key: '#f759ab',
+  },
+  {
+    label: '紫',
+    key: '#9254de',
+  }
+]

@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useMemo, useState } from 'react'
 import {
   Menu,
   Button,
@@ -6,12 +6,14 @@ import {
   Input,
   Avatar,
   MenuProps,
+  Dropdown,
 } from 'antd'
 import {
   LeftOutlined,
   RightOutlined,
   UserOutlined,
   CaretRightOutlined,
+  CheckOutlined,
 } from '@ant-design/icons'
 import {
   ShezhiIcon,
@@ -23,8 +25,8 @@ import {
   AixinIcon,
 } from '@/components/icons'
 import { Outlet, useNavigate } from "react-router-dom"
-import { menuItems } from '@/constants'
-import { useUserStore } from '@/store';
+import { menuItems, themeItems } from '@/constants'
+import { useGlobalColor, useUserStore } from '@/store';
 import styles from './index.module.scss'
 
 const { Search } = Input;
@@ -33,6 +35,7 @@ const Layouts: FC = () => {
   const { user } = useUserStore()
   const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
+  const { color, setColor } = useGlobalColor();
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
@@ -43,11 +46,21 @@ const Layouts: FC = () => {
     navigate('/login')
   }
 
-  console.log('user', user);
+  const skinItems = useMemo(() => themeItems!.map(({ label, key }) => ({
+    label: <div className='skin-item'>
+      <div
+        className='dot'
+        style={{ background: key }}
+        onClick={() => setColor(key)}
+      >{ color === key ? <CheckOutlined /> : null}</div>
+      <div>{label}</div>
+    </div>,
+    key
+  })), [themeItems, color]);
 
   return (
     <div className={styles.layouts}>
-      <div className="header">
+      <div className="header" style={{ background: color}}>
         <div className="h-left">
           <Space>
             <LeftOutlined />
@@ -55,11 +68,15 @@ const Layouts: FC = () => {
           </Space>
         </div>
         <div className="h-right">
-          <Space>
-            <Search />
-            <ShezhiIcon />
+          <Search className='search' />
+          <ShezhiIcon className='setting' />
+          <Dropdown
+            overlayClassName='skin-menu'
+            menu={{ items: skinItems }}
+            arrow
+          >
             <PifuIcon />
-          </Space>
+          </Dropdown>
         </div>
       </div>
       <div className="middle">
@@ -67,9 +84,9 @@ const Layouts: FC = () => {
           <div className="avator">
             {
               user ? (<Space>
-                <Avatar size="large" icon={<UserOutlined />} src={user.imgUrl}/>
+                <Avatar size="large" icon={<UserOutlined />} src={user.imgUrl} />
                 <span>{user.username}</span>
-                <CaretRightOutlined /> 
+                <CaretRightOutlined />
               </Space>) : (<Space onClick={loginRedirect}>
                 <Avatar size="large" icon={<UserOutlined />} />
                 <span>未登录</span>
@@ -87,18 +104,18 @@ const Layouts: FC = () => {
         </div>
       </div>
       <div className="footer">
-        <div className="process"></div>
+        <div className="process" style={{ background: color}}/>
         <div className='bar'>
           <div className="b-left">
             <AixinIcon />
           </div>
           <div className="b-center">
-            <ShangyishouIcon style={{ color: '#389e0d' }} />
+            <ShangyishouIcon style={{ color }} />
             {isPlaying
-              ? <ZantingIcon style={{ color: '#389e0d', fontSize: 38 }} />
-              : <BofangIcon style={{ color: '#389e0d', fontSize: 38 }} />
+              ? <ZantingIcon style={{ color, fontSize: 38 }} />
+              : <BofangIcon style={{ color, fontSize: 38 }} />
             }
-            <XiayishouIcon style={{ color: '#389e0d' }} />
+            <XiayishouIcon style={{ color }} />
           </div>
           <div className="b-right"></div>
         </div>

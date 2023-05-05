@@ -74,6 +74,7 @@ app.on('activate', () => {
 
 async function createWindow() {
   win = new BrowserWindow({
+    autoHideMenuBar: true,
     title: 'Main window',
     icon: path.join(process.env.PUBLIC, 'favicon.svg'),
     webPreferences: {

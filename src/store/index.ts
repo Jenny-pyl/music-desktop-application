@@ -1,5 +1,7 @@
 import { useUserStore } from './user';
+import { useGlobalColor } from './globalColor';
 
 export {
-  useUserStore
+  useUserStore,
+  useGlobalColor,
 }
