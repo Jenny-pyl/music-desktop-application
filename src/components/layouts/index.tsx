@@ -1,21 +1,20 @@
 import {
   FC,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
 import {
   Outlet,
-  useNavigate,
   useLocation,
+  useNavigate,
+  redirect,
 } from 'react-router-dom'
 import {
   type MenuProps,
   Avatar,
   Dropdown,
-  Input,
   Menu,
-  Space,
-  message,
 } from 'antd'
 import {
   LeftOutlined,
@@ -37,13 +36,10 @@ import { menuItems, themeItems } from '@/constants'
 import {
   useGlobalColor,
   useUserStore,
-  useSearch,
 } from '@/store'
-import { search as searchQQ } from '@/fetch-music/qq'
-import { getLocalItem } from '@/utils'
+import { SongSearch } from '@/pages/search'
+import { locaStorage } from '@/utils'
 import styles from './index.module.scss'
-
-const { Search } = Input
 
 export type UserInfo = {
   id: string;
@@ -60,12 +56,7 @@ const Layouts: FC = () => {
   const location = useLocation();
   const { user } = useUserStore();
   const { color, setColor } = useGlobalColor();
-  const {
-    loading,
-    setLoading,
-    setData,
-  } = useSearch();
-  const userInfo: UserInfo | null = getLocalItem('userInfo');
+  const userInfo = locaStorage.get<UserInfo | null>('userInfo');
   const [isPlaying, setIsPlaying] = useState(false);
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
@@ -89,38 +80,28 @@ const Layouts: FC = () => {
     key
   })), [themeItems, color]);
 
-  const searchMusic = async (value: string) => {
-    if (!value) {
-      message.warning('请输入关键词搜索 ^_^');
-      return;
+  useEffect(() => {
+    if (location.pathname === '/') {
+      // 重定向 -> 发现音乐
+      navigate('/findMusic');
     }
-    if (location.pathname !== '/search') {
-      navigate('/search')
-    }
-
-    setLoading(true);
-    setData(await searchQQ({ keywords: value }));
-    setLoading(false);
-  };
+  }, [location.pathname]);
 
   return (
     <div className={styles.layouts}>
       <div className="header d-flex" style={{ background: color }}>
         <div className="h-left d-flex">
           <div className='flex-fill app-drag' />
-          <Space>
-            <LeftOutlined />
-            <RightOutlined />
-          </Space>
+          <div className='navigate d-flex align-items-center'>
+            <LeftOutlined onClick={() => navigate(-1)} />
+            <RightOutlined onClick={() => navigate(1)} />
+          </div>
         </div>
         <div className="h-right d-flex align-items-center">
           <div className='flex-fill h-100 app-drag' />
-          <Search
-            placeholder='歌名、歌手'
-            loading={loading}
-            className='search'
-            onSearch={searchMusic}
-          />
+          <div className='search'>
+            <SongSearch />
+          </div>
           <ShezhiIcon className='setting' />
           <Dropdown
             overlayClassName='skin-menu'

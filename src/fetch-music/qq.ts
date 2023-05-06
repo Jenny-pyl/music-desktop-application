@@ -8,6 +8,11 @@ import type {
   SongRecord,
   SongRecordRaw,
 } from './types/search';
+import type {
+  DiscRecordRaw,
+  DiscResponse,
+  DiscResult,
+} from './types/disc';
 
 export const ALL_CATEGORY_ID = 10000000;
 
@@ -16,17 +21,32 @@ function getHtmlTextContent(html: string) {
   return parser.parseFromString(html, 'text/html').body.textContent ?? '';
 }
 
-function convert2song(record: SongRecordRaw) {
+function convertDisc2song(song: DiscRecordRaw) {
   return <SongRecord>{
-    id: `qqtrack_${record.mid}`,
-    title: getHtmlTextContent(record.name),
-    artist: getHtmlTextContent(record.singer[0].name),
-    artist_id: `qqartist_${record.singer[0].mid}`,
-    album: getHtmlTextContent(record.album.name),
-    album_id: `qqalbum_${record.album.mid}`,
-    img_url: qq_get_image_url(record.album.mid, 'album'),
+    id: song.songmid,
+    title: getHtmlTextContent(song.songname),
+    artist: getHtmlTextContent(song.singer[0].name),
+    artist_id: `qqartist_${song.singer[0].mid}`,
+    album: getHtmlTextContent(song.albumname),
+    album_id: `qqalbum_${song.albummid}`,
+    img_url: qq_get_image_url(song.albummid, 'album'),
     source: 'qq',
-    source_url: `https://y.qq.com/#type=song&mid=${record.mid}&tpl=yqq_song_detail`,
+    source_url: `https://y.qq.com/#type=song&mid=${song.songmid}&tpl=yqq_song_detail`,
+    url: !qq_is_playable(song) ? '' : undefined,
+  };
+}
+
+function convert2song(song: SongRecordRaw) {
+  return <SongRecord>{
+    id: song.mid,
+    title: getHtmlTextContent(song.name),
+    artist: getHtmlTextContent(song.singer[0].name),
+    artist_id: `qqartist_${song.singer[0].mid}`,
+    album: getHtmlTextContent(song.album.name),
+    album_id: `qqalbum_${song.album.mid}`,
+    img_url: qq_get_image_url(song.album.mid, 'album'),
+    source: 'qq',
+    source_url: `https://y.qq.com/#type=song&mid=${song.mid}&tpl=yqq_song_detail`,
     url: '',
   };
 }
@@ -59,11 +79,25 @@ function qq_get_image_url(qqimgid: string, img_type: 'artist' | 'album') {
   return `https://y.gtimg.cn/music/photo_new/${s}.jpg`;
 }
 
+function qq_is_playable(song: DiscRecordRaw) {
+  const switch_flag = song.switch.toString(2).split('');
+  switch_flag.pop();
+  switch_flag.reverse();
+  // flag switch table meaning:
+  // ["play_lq", "play_hq", "play_sq", "down_lq", "down_hq", "down_sq", "soso",
+  //  "fav", "share", "bgm", "ring", "sing", "radio", "try", "give"]
+  const play_flag = switch_flag[0];
+  const try_flag = switch_flag[13];
+  return play_flag === '1' || (play_flag === '1' && try_flag === '1');
+}
+
 function UnicodeToAscii(str: string) {
   return str.replace(/&#(\d+);/g, () =>
     String.fromCharCode(arguments[1])
   );
 }
+
+// ------------------------------------------------------------------------------------------------
 
 /**
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L38
@@ -86,7 +120,7 @@ export async function getCategoryList({
   return response.data.data.list.map<CategoryRecord>(item => ({
     cover_img_url: item.imgurl,
     title: getHtmlTextContent(item.dissname),
-    id: `qqplaylist_${item.dissid}`,
+    disstid: item.dissid,
     source_url: `https://y.qq.com/n/ryqq/playlist/${item.dissid}`,
   }));
 }
@@ -105,6 +139,31 @@ export async function getTopCategoryList() {
     source_url: `https://y.qq.com/n/yqq/toplist/${item.id}.html`,
     title: item.topTitle,
   }));
+}
+
+/**
+ * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L228
+ */
+export async function getDisc(disstid: string): Promise<DiscResult> {
+  const url =
+    'https://i.y.qq.com/qzone-music/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg' +
+    '?type=1&json=1&utf8=1&onlysong=0' +
+    `&nosign=1&disstid=${disstid}&g_tk=5381&loginUin=0&hostUin=0` +
+    '&format=json&inCharset=GB2312&outCharset=utf-8&notice=0' +
+    '&platform=yqq&needNewCode=0';
+
+  const response = await axios.get<DiscResponse>(url);
+  const { data } = response;
+
+  return {
+    list: data.cdlist[0].songlist.map((item) => convertDisc2song(item)),
+    info: {
+      cover_img_url: data.cdlist[0].logo,
+      title: data.cdlist[0].dissname,
+      disstid,
+      source_url: `https://y.qq.com/n/ryqq/playlist/${disstid}`,
+    },
+  };
 }
 
 export enum SearchType {
