@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 import Layouts from "@/components/layouts";
 import FindMusic from "@/pages/findMusic";
 import PersonalFM from "@/pages/personalFM";
@@ -8,8 +8,9 @@ import MyPrefer from "@/pages/myPrefer";
 import MyCollect from "@/pages/myCollect";
 import MyCreate from "@/pages/myCreate";
 import Login from "@/pages/login";
+import Search from "@/pages/search";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: '/',
     element: <Layouts />,
@@ -41,8 +42,12 @@ const router = createBrowserRouter([
       {
         path: 'myCreate/:id',
         element: <MyCreate />,
-      }
-    ]
+      },
+      {
+        path: 'search',
+        element: <Search />,
+      },
+    ],
   },
   {
     path: '/login',

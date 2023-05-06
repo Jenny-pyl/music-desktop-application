@@ -1,12 +1,21 @@
-import { FC, useMemo, useState } from 'react'
 import {
-  Menu,
-  Button,
-  Space,
-  Input,
+  FC,
+  useMemo,
+  useState,
+} from 'react'
+import {
+  Outlet,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom'
+import {
+  type MenuProps,
   Avatar,
-  MenuProps,
   Dropdown,
+  Input,
+  Menu,
+  Space,
+  message,
 } from 'antd'
 import {
   LeftOutlined,
@@ -24,18 +33,28 @@ import {
   XiayishouIcon,
   AixinIcon,
 } from '@/components/icons'
-import { Outlet, useNavigate } from "react-router-dom"
 import { menuItems, themeItems } from '@/constants'
-import { useGlobalColor, useUserStore } from '@/store';
+import {
+  useGlobalColor,
+  useUserStore,
+  useSearch,
+} from '@/store'
+import { search as searchQQ } from '@/fetch-music/qq'
 import styles from './index.module.scss'
 
-const { Search } = Input;
+const { Search } = Input
 
 const Layouts: FC = () => {
-  const { user } = useUserStore()
   const navigate = useNavigate();
-  const [isPlaying, setIsPlaying] = useState(false);
+  const location = useLocation();
+  const { user } = useUserStore();
   const { color, setColor } = useGlobalColor();
+  const {
+    loading,
+    setLoading,
+    setData,
+  } = useSearch();
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
@@ -58,6 +77,20 @@ const Layouts: FC = () => {
     key
   })), [themeItems, color]);
 
+  const searchMusic = async (value: string) => {
+    if (!value) {
+      message.warning('请输入关键词搜索 ^_^');
+      return;
+    }
+    if (location.pathname !== '/search') {
+      navigate('/search')
+    }
+
+    setLoading(true);
+    setData(await searchQQ({ keywords: value }));
+    setLoading(false);
+  };
+
   return (
     <div className={styles.layouts}>
       <div className="header d-flex" style={{ background: color }}>
@@ -70,7 +103,12 @@ const Layouts: FC = () => {
         </div>
         <div className="h-right d-flex align-items-center">
           <div className='flex-fill h-100 app-drag' />
-          <Search className='search' />
+          <Search
+            placeholder='歌名、歌手'
+            loading={loading}
+            className='search'
+            onSearch={searchMusic}
+          />
           <ShezhiIcon className='setting' />
           <Dropdown
             overlayClassName='skin-menu'

@@ -13,14 +13,14 @@ const RootNode = () => {
   // const color = '#73d13d'
   return (
     <ConfigProvider
-    theme={{
-      token: {
-        colorPrimary: color,
-      },
-    }}
-  >
-    <RouterProvider router={router} />
-  </ConfigProvider>
+      theme={{
+        token: {
+          colorPrimary: color,
+        },
+      }}
+    >
+      <RouterProvider router={router} />
+    </ConfigProvider>
   )
 }
 

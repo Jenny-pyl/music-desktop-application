@@ -35,7 +35,7 @@ export interface CategoryResponse {
   }
 }
 
-export type CategoryRecordRaw = CategoryResponse['data']['list'][number]
+export type CategoryRecordRaw = CategoryResponse['data']['list'][0]
 
 export interface CategoryRecord {
   cover_img_url: string
