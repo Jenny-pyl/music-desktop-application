@@ -26,16 +26,27 @@ import {
 } from '@/components/icons'
 import { Outlet, useNavigate } from "react-router-dom"
 import { menuItems, themeItems } from '@/constants'
-import { useGlobalColor, useUserStore } from '@/store';
+import { useGlobalColor } from '@/store'
+import { getLocalItem } from '@/utils'
 import styles from './index.module.scss'
+
+export type UserInfo = {
+  id: string;
+  username: string;
+  imgUrl: string;
+  age: number;
+  gender: 0 | 1;
+  isVip: boolean;
+  level: number;
+}
 
 const { Search } = Input;
 
 const Layouts: FC = () => {
-  const { user } = useUserStore()
-  const navigate = useNavigate();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const { color, setColor } = useGlobalColor();
+  const navigate = useNavigate()
+  const [isPlaying, setIsPlaying] = useState(false)
+  const { color, setColor } = useGlobalColor()
+  const userInfo: UserInfo | null = getLocalItem('userInfo')
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
@@ -83,15 +94,15 @@ const Layouts: FC = () => {
         <div className="sider">
           <div className="avator">
             {
-              user ? (<Space>
-                <Avatar size="large" icon={<UserOutlined />} src={user.imgUrl} />
-                <span>{user.username}</span>
-                <CaretRightOutlined />
-              </Space>) : (<Space onClick={loginRedirect}>
+              userInfo ? (<div className='a-content'>
+                <Avatar size="large" icon={<UserOutlined />} src={userInfo.imgUrl} />
+                <span className='word'>{userInfo.username}</span>
+                <CaretRightOutlined className='right-arrow'/>
+              </div>) : (<div className='a-content' onClick={loginRedirect}>
                 <Avatar size="large" icon={<UserOutlined />} />
-                <span>未登录</span>
-                <CaretRightOutlined />
-              </Space>)
+                <span className='word'>未登录</span>
+                <CaretRightOutlined className='right-arrow'/>
+              </div>)
             }
           </div>
           <Menu

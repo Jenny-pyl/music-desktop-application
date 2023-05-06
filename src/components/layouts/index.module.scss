@@ -10,6 +10,7 @@
       position: absolute;
       top: 0;
       opacity: 0.5;
+      // filter: brightness(0.8);
       display: flex;
       box-shadow: 100px 1px 8px 8px rgba(0, 0, 0, 0.05);
 
@@ -55,6 +56,22 @@
 
         .avator {
           margin: 8px;
+
+          .a-content {
+            display: flex;
+            align-items: center;
+            color: rgb(133, 131, 131);
+
+            .word {
+              margin: 0 5px;
+            }
+
+            .right-arrow {
+              font-size: 12px;
+              position: relative;
+              top: 1px;
+            }
+          }
         }
 
         .ant-menu-root {
