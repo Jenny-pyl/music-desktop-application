@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react'
 import { getCategoryList } from '@/fetch-music/qq'
-import type { CategoryRecord } from '@/fetch-music/types'
+import type { CategoryRecord } from '@/fetch-music/types/category'
 import style from './index.module.scss'
 
 const findMusic: FC = () => {

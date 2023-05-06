@@ -1,12 +1,21 @@
-import { FC, useMemo, useState } from 'react'
 import {
-  Menu,
-  Button,
-  Space,
-  Input,
+  FC,
+  useMemo,
+  useState,
+} from 'react'
+import {
+  Outlet,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom'
+import {
+  type MenuProps,
   Avatar,
-  MenuProps,
   Dropdown,
+  Input,
+  Menu,
+  Space,
+  message,
 } from 'antd'
 import {
   LeftOutlined,
@@ -24,11 +33,17 @@ import {
   XiayishouIcon,
   AixinIcon,
 } from '@/components/icons'
-import { Outlet, useNavigate } from "react-router-dom"
 import { menuItems, themeItems } from '@/constants'
-import { useGlobalColor } from '@/store'
+import {
+  useGlobalColor,
+  useUserStore,
+  useSearch,
+} from '@/store'
+import { search as searchQQ } from '@/fetch-music/qq'
 import { getLocalItem } from '@/utils'
 import styles from './index.module.scss'
+
+const { Search } = Input
 
 export type UserInfo = {
   id: string;
@@ -40,13 +55,18 @@ export type UserInfo = {
   level: number;
 }
 
-const { Search } = Input;
-
 const Layouts: FC = () => {
-  const navigate = useNavigate()
-  const [isPlaying, setIsPlaying] = useState(false)
-  const { color, setColor } = useGlobalColor()
-  const userInfo: UserInfo | null = getLocalItem('userInfo')
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useUserStore();
+  const { color, setColor } = useGlobalColor();
+  const {
+    loading,
+    setLoading,
+    setData,
+  } = useSearch();
+  const userInfo: UserInfo | null = getLocalItem('userInfo');
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
@@ -63,23 +83,44 @@ const Layouts: FC = () => {
         className='dot'
         style={{ background: key }}
         onClick={() => setColor(key)}
-      >{ color === key ? <CheckOutlined /> : null}</div>
+      >{color === key ? <CheckOutlined /> : null}</div>
       <div>{label}</div>
     </div>,
     key
   })), [themeItems, color]);
 
+  const searchMusic = async (value: string) => {
+    if (!value) {
+      message.warning('请输入关键词搜索 ^_^');
+      return;
+    }
+    if (location.pathname !== '/search') {
+      navigate('/search')
+    }
+
+    setLoading(true);
+    setData(await searchQQ({ keywords: value }));
+    setLoading(false);
+  };
+
   return (
     <div className={styles.layouts}>
-      <div className="header" style={{ background: color}}>
-        <div className="h-left">
+      <div className="header d-flex" style={{ background: color }}>
+        <div className="h-left d-flex">
+          <div className='flex-fill app-drag' />
           <Space>
             <LeftOutlined />
             <RightOutlined />
           </Space>
         </div>
-        <div className="h-right">
-          <Search className='search' />
+        <div className="h-right d-flex align-items-center">
+          <div className='flex-fill h-100 app-drag' />
+          <Search
+            placeholder='歌名、歌手'
+            loading={loading}
+            className='search'
+            onSearch={searchMusic}
+          />
           <ShezhiIcon className='setting' />
           <Dropdown
             overlayClassName='skin-menu'
@@ -97,11 +138,11 @@ const Layouts: FC = () => {
               userInfo ? (<div className='a-content'>
                 <Avatar size="large" icon={<UserOutlined />} src={userInfo.imgUrl} />
                 <span className='word'>{userInfo.username}</span>
-                <CaretRightOutlined className='right-arrow'/>
+                <CaretRightOutlined className='right-arrow' />
               </div>) : (<div className='a-content' onClick={loginRedirect}>
                 <Avatar size="large" icon={<UserOutlined />} />
                 <span className='word'>未登录</span>
-                <CaretRightOutlined className='right-arrow'/>
+                <CaretRightOutlined className='right-arrow' />
               </div>)
             }
           </div>
@@ -115,7 +156,7 @@ const Layouts: FC = () => {
         </div>
       </div>
       <div className="footer">
-        <div className="process" style={{ background: color}}/>
+        <div className="process" style={{ background: color }} />
         <div className='bar'>
           <div className="b-left">
             <AixinIcon />
