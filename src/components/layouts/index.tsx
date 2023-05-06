@@ -40,9 +40,20 @@ import {
   useSearch,
 } from '@/store'
 import { search as searchQQ } from '@/fetch-music/qq'
+import { getLocalItem } from '@/utils'
 import styles from './index.module.scss'
 
 const { Search } = Input
+
+export type UserInfo = {
+  id: string;
+  username: string;
+  imgUrl: string;
+  age: number;
+  gender: 0 | 1;
+  isVip: boolean;
+  level: number;
+}
 
 const Layouts: FC = () => {
   const navigate = useNavigate();
@@ -54,6 +65,7 @@ const Layouts: FC = () => {
     setLoading,
     setData,
   } = useSearch();
+  const userInfo: UserInfo | null = getLocalItem('userInfo');
   const [isPlaying, setIsPlaying] = useState(false);
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
@@ -123,15 +135,15 @@ const Layouts: FC = () => {
         <div className="sider">
           <div className="avator">
             {
-              user ? (<Space>
-                <Avatar size="large" icon={<UserOutlined />} src={user.imgUrl} />
-                <span>{user.username}</span>
-                <CaretRightOutlined />
-              </Space>) : (<Space onClick={loginRedirect}>
+              userInfo ? (<div className='a-content'>
+                <Avatar size="large" icon={<UserOutlined />} src={userInfo.imgUrl} />
+                <span className='word'>{userInfo.username}</span>
+                <CaretRightOutlined className='right-arrow' />
+              </div>) : (<div className='a-content' onClick={loginRedirect}>
                 <Avatar size="large" icon={<UserOutlined />} />
-                <span>未登录</span>
-                <CaretRightOutlined />
-              </Space>)
+                <span className='word'>未登录</span>
+                <CaretRightOutlined className='right-arrow' />
+              </div>)
             }
           </div>
           <Menu

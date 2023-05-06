@@ -4,14 +4,12 @@ import { Button, Input, Form, message } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import style from './index.module.scss'
 import { IPC } from '@common/constants';
-import { useUserStore } from '@/store';
 
 const { Password } = Input;
 
 const login: FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { setUser } = useUserStore();
 
   const submit = async () => {
     const formData = await form.validateFields();
@@ -22,7 +20,7 @@ const login: FC = () => {
         message.success({
           content: res.msg,
           onClose() {
-            setUser(res.data);
+            localStorage.setItem('userInfo', JSON.stringify(res.data));
             navigate('/')
           }
         });
