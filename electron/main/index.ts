@@ -77,6 +77,8 @@ async function createWindow() {
     autoHideMenuBar: true,
     title: 'Main window',
     icon: path.join(process.env.PUBLIC, 'favicon.svg'),
+    width: 1000,
+    height: 740,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: false,

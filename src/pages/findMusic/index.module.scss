@@ -1,11 +1,31 @@
 .findMusic {
   :global {
-    .category-list {}
+    .category-info {
+      position: relative;
+      box-shadow: 0 0 10px -4px rgba(140, 140, 140, .4);
+      z-index: 1;
+    }
+
+    .category-list {
+      flex-grow: 1;
+      height: 0;
+      overflow: auto;
+
+      // https://stackoverflow.com/questions/18744164/flex-box-align-last-row-to-grid
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+
+      &:after {
+        content: "";
+        flex: auto;
+      }
+    }
 
     .category-list-item {
-      width: 140px;
+      width: 13.4vw;
       overflow: hidden;
-      margin: 3.5px 3.5px 3.5px;
+      margin: .7vw .4vw;
       border-radius: 4px;
       border: 1px solid #efefef;
       transition: 400ms;

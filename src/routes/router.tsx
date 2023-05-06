@@ -9,6 +9,7 @@ import MyCollect from "@/pages/myCollect";
 import MyCreate from "@/pages/myCreate";
 import Login from "@/pages/login";
 import Search from "@/pages/search";
+import PlayList from "@/pages/playList";
 
 const router = createHashRouter([
   {
@@ -46,6 +47,10 @@ const router = createHashRouter([
       {
         path: 'search',
         element: <Search />,
+      },
+      {
+        path: 'playList',
+        element: <PlayList />,
       },
     ],
   },

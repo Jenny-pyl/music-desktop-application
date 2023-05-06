@@ -1,0 +1,18 @@
+.song-list-table {
+  :global {
+    tr {
+      color: #666;
+      font-size: 12px;
+    }
+
+    .song-img {
+      height: 24px;
+
+      img {
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+      }
+    }
+  }
+}

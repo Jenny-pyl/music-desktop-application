@@ -4,7 +4,8 @@
   height: 100vh;
 
   :global {
-    .app-drag { // 可拖动
+    .app-drag {
+      // 可拖动
       position: relative;
       z-index: 9;
       -webkit-app-region: drag;
@@ -20,6 +21,18 @@
         width: 25%;
         line-height: 50px;
         padding-right: 2px;
+      }
+
+      .navigate {
+        position: relative;
+        z-index: 3;
+
+        .anticon {
+          display: inline-block;
+          width: 40px;
+          line-height: 40px;
+          cursor: pointer;
+        }
       }
 
       .h-right {

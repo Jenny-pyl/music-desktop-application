@@ -1,0 +1,26 @@
+.playList {
+  :global {
+    .play-info {
+      position: relative;
+      height: 140px;
+      box-shadow: 0 0 10px -4px rgba(140, 140, 140, .4);
+      z-index: 1;
+    }
+
+    .play-info-cover-img {
+      img {
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        border-radius: 7px;
+        box-shadow: 0 0 10px -4px rgba(140, 140, 140, 1);
+      }
+    }
+
+    .play-list {
+      height: 0;
+      flex-grow: 1;
+      overflow: auto;
+    }
+  }
+}
