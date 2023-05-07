@@ -1,5 +1,3 @@
-import type { SearchType } from '../qq'
-
 export interface SearchResponse {
   "code": 0,
   "ts": 1683290492230,
@@ -449,43 +447,4 @@ export interface SearchResponse {
 }
 
 export type SongRecordRaw = SearchResponse['req']['data']['body']['song']['list'][0]
-
-/** 单曲 */
-export interface SongRecord {
-  id: string
-  title: string
-  artist: string
-  artist_id: string
-  album: string
-  album_id: string
-  img_url: string
-  source: string
-  source_url: string
-  url: string
-}
-
 export type SongListRecordRaw = SearchResponse['req']['data']['body']['songlist']['list'][0]
-
-/** 歌单 */
-export interface SongListRecord {
-  id: string
-  title: string
-  source: string
-  source_url: string
-  img_url: string
-  url: string
-  author: string
-  count: number
-}
-
-export type SearchResult = {
-  page_num: number
-  page_size: number
-  total: number
-} & ({
-  type: SearchType.单曲
-  list: SongRecord[]
-} | {
-  type: SearchType.歌单
-  list: SongListRecord[]
-})

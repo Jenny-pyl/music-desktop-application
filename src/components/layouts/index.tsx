@@ -8,7 +8,6 @@ import {
   Outlet,
   useLocation,
   useNavigate,
-  redirect,
 } from 'react-router-dom'
 import {
   type MenuProps,

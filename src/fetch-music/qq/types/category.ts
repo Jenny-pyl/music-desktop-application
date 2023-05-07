@@ -38,8 +38,8 @@ export interface CategoryResponse {
 export type CategoryRecordRaw = CategoryResponse['data']['list'][0]
 
 export interface CategoryRecord {
+  dissid: string
   cover_img_url: string
   title: string
-  disstid: string
   source_url: string
 }

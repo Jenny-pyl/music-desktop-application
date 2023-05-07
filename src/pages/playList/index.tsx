@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { Skeleton } from 'antd'
 import { search2query } from '@/utils'
 import { getDisc } from '@/fetch-music/qq'
-import type { DiscResult } from '@/fetch-music/types/disc'
+import type { DiscResult } from '@/fetch-music/qq/types/disc'
 import SongList from '@/components/song/list'
 import styles from './index.module.scss'
 

@@ -2,8 +2,16 @@ import {
   type TableProps,
   Table,
 } from 'antd'
-import { PictureOutlined } from '@ant-design/icons'
-import type { SongRecord } from '@/fetch-music/types/search'
+import {
+  PictureOutlined,
+  PlayCircleOutlined,
+  PlaySquareOutlined,
+} from '@ant-design/icons'
+import {
+  type SongRecord,
+  fetchMusic_autoRetry,
+} from '@/fetch-music/fetch'
+import { lyric } from '@/fetch-music/qq'
 import styles from './list.module.scss'
 
 export default (props: TableProps<SongRecord>) => {
@@ -13,17 +21,47 @@ export default (props: TableProps<SongRecord>) => {
     ...omit
   } = props
 
+  const clickPlay = async (song: SongRecord) => {
+    const [
+      lyricResult,
+      musicResult,
+    ] = await Promise.all([
+      lyric(song.mid),
+      fetchMusic_autoRetry({
+        mid: song.mid,
+        title: song.title,
+        artist: song.artist,
+      }),
+    ])
+
+    console.log('[歌词]', lyricResult)
+    console.log('[音源]', musicResult)
+  }
+
   const tableProps: TableProps<SongRecord> = {
-    rowKey: 'id',
+    rowKey: 'mid',
     size: 'small',
     className: [className, styles['song-list-table']].filter(Boolean).join(' '),
     pagination: false,
     columns: [
       {
+        title: <PlaySquareOutlined />,
+        dataIndex: '-',
+        className: 'song-play-cell',
+        render: (_, record) => (
+          <div
+            className='song-play-icon'
+            onClick={() => clickPlay(record)}
+          >
+            <PlayCircleOutlined />
+          </div>
+        ),
+      },
+      {
         title: <PictureOutlined />,
         dataIndex: 'img_url',
         render: text => (
-          <div className='song-img'>
+          <div className='song-portrait'>
             <img src={text} />
           </div>
         ),

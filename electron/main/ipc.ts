@@ -1,4 +1,8 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import {
+  BrowserWindow,
+  ipcMain,
+  session,
+} from 'electron'
 import { Sql } from './sql'
 import { IPC } from '@common/constants'
 
@@ -7,12 +11,6 @@ export class Ipc {
     public win: BrowserWindow,
     public sql: Sql,
   ) {
-    ipcMain.handle(IPC.获取音乐列表, () => {
-      return [
-        { name: 'foo', auth: 'foo' },
-        { name: 'bar', auth: 'bar' },
-      ]
-    })
     ipcMain.handle(IPC.登录, async (_, args) => {
       try {
         const { username, password } = args
@@ -37,5 +35,16 @@ export class Ipc {
         }
       }
     })
+
+    ipcMain.handle(
+      IPC.获取cookie,
+      (_event, filter: Electron.CookiesGetFilter) => session.defaultSession.cookies.get(filter),
+    )
+    ipcMain.handle(
+      IPC.设置cookie,
+      async (_event, details: Electron.CookiesSetDetails) => {
+        session.defaultSession.cookies.set(details)
+      },
+    )
   }
 }

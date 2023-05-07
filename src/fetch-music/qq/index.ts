@@ -2,10 +2,7 @@ import axios from 'axios';
 import type { CategoryRecord, CategoryResponse } from './types/category';
 import type {
   SearchResponse,
-  SearchResult,
-  SongListRecord,
   SongListRecordRaw,
-  SongRecord,
   SongRecordRaw,
 } from './types/search';
 import type {
@@ -13,24 +10,33 @@ import type {
   DiscResponse,
   DiscResult,
 } from './types/disc';
+import type { LyricResponse, LyricResult } from './types/lyric';
+import {
+  type SearchOptions,
+  type SearchResult,
+  type SongRecord,
+  type SongListRecord,
+  type FetchOptions,
+  type FetchResult,
+  SearchType,
+  defaultFetchOptions,
+  getHtmlTextContent,
+  UnicodeToAscii,
+} from '../fetch';
 
+const TAG = '[qq]';
 export const ALL_CATEGORY_ID = 10000000;
-
-function getHtmlTextContent(html: string) {
-  const parser = new DOMParser();
-  return parser.parseFromString(html, 'text/html').body.textContent ?? '';
-}
 
 function convertDisc2song(song: DiscRecordRaw) {
   return <SongRecord>{
-    id: song.songmid,
+    mid: song.songmid,
     title: getHtmlTextContent(song.songname),
     artist: getHtmlTextContent(song.singer[0].name),
     artist_id: `qqartist_${song.singer[0].mid}`,
     album: getHtmlTextContent(song.albumname),
     album_id: `qqalbum_${song.albummid}`,
     img_url: qq_get_image_url(song.albummid, 'album'),
-    source: 'qq',
+    platform: 'qq',
     source_url: `https://y.qq.com/#type=song&mid=${song.songmid}&tpl=yqq_song_detail`,
     url: !qq_is_playable(song) ? '' : undefined,
   };
@@ -38,14 +44,14 @@ function convertDisc2song(song: DiscRecordRaw) {
 
 function convert2song(song: SongRecordRaw) {
   return <SongRecord>{
-    id: song.mid,
+    mid: song.mid,
     title: getHtmlTextContent(song.name),
     artist: getHtmlTextContent(song.singer[0].name),
     artist_id: `qqartist_${song.singer[0].mid}`,
     album: getHtmlTextContent(song.album.name),
     album_id: `qqalbum_${song.album.mid}`,
     img_url: qq_get_image_url(song.album.mid, 'album'),
-    source: 'qq',
+    platform: 'qq',
     source_url: `https://y.qq.com/#type=song&mid=${song.mid}&tpl=yqq_song_detail`,
     url: '',
   };
@@ -53,12 +59,11 @@ function convert2song(song: SongRecordRaw) {
 
 function convert2songList(record: SongListRecordRaw) {
   return <SongListRecord>{
-    id: `qqplaylist_${record.dissid}`,
+    dissid: record.dissid,
     title: getHtmlTextContent(record.dissname),
-    source: 'qq',
+    platform: 'qq',
     source_url: `https://y.qq.com/n/ryqq/playlist/${record.dissid}`,
     img_url: record.imgurl,
-    url: `qqplaylist_${record.dissid}`,
     author: UnicodeToAscii(record.creator.name),
     count: record.song_count,
   };
@@ -91,13 +96,7 @@ function qq_is_playable(song: DiscRecordRaw) {
   return play_flag === '1' || (play_flag === '1' && try_flag === '1');
 }
 
-function UnicodeToAscii(str: string) {
-  return str.replace(/&#(\d+);/g, () =>
-    String.fromCharCode(arguments[1])
-  );
-}
-
-// ------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
 /**
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L38
@@ -118,9 +117,9 @@ export async function getCategoryList({
 
   const response = await axios.get<CategoryResponse>(url);
   return response.data.data.list.map<CategoryRecord>(item => ({
+    dissid: item.dissid,
     cover_img_url: item.imgurl,
     title: getHtmlTextContent(item.dissname),
-    disstid: item.dissid,
     source_url: `https://y.qq.com/n/ryqq/playlist/${item.dissid}`,
   }));
 }
@@ -144,11 +143,11 @@ export async function getTopCategoryList() {
 /**
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L228
  */
-export async function getDisc(disstid: string): Promise<DiscResult> {
+export async function getDisc(dissid: string): Promise<DiscResult> {
   const url =
     'https://i.y.qq.com/qzone-music/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg' +
     '?type=1&json=1&utf8=1&onlysong=0' +
-    `&nosign=1&disstid=${disstid}&g_tk=5381&loginUin=0&hostUin=0` +
+    `&nosign=1&disstid=${dissid}&g_tk=5381&loginUin=0&hostUin=0` +
     '&format=json&inCharset=GB2312&outCharset=utf-8&notice=0' +
     '&platform=yqq&needNewCode=0';
 
@@ -160,32 +159,45 @@ export async function getDisc(disstid: string): Promise<DiscResult> {
     info: {
       cover_img_url: data.cdlist[0].logo,
       title: data.cdlist[0].dissname,
-      disstid,
-      source_url: `https://y.qq.com/n/ryqq/playlist/${disstid}`,
+      dissid,
+      source_url: `https://y.qq.com/n/ryqq/playlist/${dissid}`,
     },
   };
 }
 
-export enum SearchType {
-  单曲 = 0,
-  歌单 = 3,
+/**
+ * 获取歌词
+ * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L517
+ */
+export async function lyric(songmid: string): Promise<LyricResult> {
+  const url =
+    'https://i.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg' +
+    `?songmid=${songmid}&g_tk=5381&format=json&inCharset=utf8&outCharset=utf-8&nobase64=1`;
+
+  const response = await axios.get<LyricResponse>(url);
+  const { data } = response;
+  const lrc = data.lyric || '';
+  const tlrc = data.trans.replace(/\/\//g, '') || '';
+
+  return {
+    lyric: lrc,
+    tlyric: tlrc,
+  };
 }
 
 /**
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L340
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L153 - 调用处
  */
-export async function search({
-  keywords,
-  search_type = SearchType.单曲,
-  page_num = 1,
-  page_size = 24,
-}: {
-  keywords: string,
-  search_type?: SearchType,
-  page_num?: number,
-  page_size?: number,
-}): Promise<SearchResult> {
+export async function searchMusic(options: SearchOptions): Promise<SearchResult> {
+  const {
+    keywords,
+    search_type,
+    page_num,
+    page_size,
+  } = defaultFetchOptions(options);
+
+  // https://github.com/lyswhut/lx-music-desktop/blob/v1.22.3/src/renderer/utils/music/tx/musicSearch.js
   const url = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
 
   const response = await axios.post<SearchResponse>(url, {
@@ -219,10 +231,103 @@ export async function search({
   }
 
   return {
-    type: search_type,
+    search_type,
     list,
     page_num,
     page_size,
     total,
   } as any;
+}
+
+/**
+ * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L418
+ */
+export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
+  const { mid: songId } = options;
+  const target_url = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
+  // thanks to https://github.com/Rain120/qq-music-api/blob/2b9cb811934888a532545fbd0bf4e4ab2aea5dbe/routers/context/getMusicPlay.js
+  const guid = '10000';
+  const songmidList = [songId];
+  const uin = '0';
+
+  const fileType = '320';
+  const fileConfig = {
+    m4a: {
+      s: 'C400',
+      e: '.m4a',
+      bitrate: 'M4A',
+    },
+    128: {
+      s: 'M500',
+      e: '.mp3',
+      bitrate: '128kbps',
+    },
+    320: {
+      s: 'M800',
+      e: '.mp3',
+      bitrate: '320kbps',
+    },
+    ape: {
+      s: 'A000',
+      e: '.ape',
+      bitrate: 'APE',
+    },
+    flac: {
+      s: 'F000',
+      e: '.flac',
+      bitrate: 'FLAC',
+    },
+  };
+  const fileInfo = fileConfig[fileType];
+  const file =
+    songmidList.length === 1 &&
+    `${fileInfo.s}${songId}${songId}${fileInfo.e}`;
+
+  const reqData = {
+    req_0: {
+      module: 'vkey.GetVkeyServer',
+      method: 'CgiGetVkey',
+      param: {
+        filename: file ? [file] : [],
+        guid,
+        songmid: songmidList,
+        songtype: [0],
+        uin,
+        loginflag: 1,
+        platform: '20',
+      },
+    },
+    loginUin: uin,
+    comm: {
+      uin,
+      format: 'json',
+      ct: 24,
+      cv: 0,
+    },
+  };
+  const params = {
+    format: 'json',
+    data: JSON.stringify(reqData),
+  };
+  const response = await axios.get(target_url, { params });
+  const { data } = response;
+  const { purl } = data.req_0.data.midurlinfo[0];
+
+  if (purl === '') {
+    // vip
+    return {
+      platform: 'qq',
+      error: '[QQ] VIP 音乐 :(',
+    };
+  }
+
+  const url = data.req_0.data.sip[0] + purl;
+  const prefix = purl.slice(0, 4);
+  const found = Object.values(fileConfig).filter((i) => i.s === prefix);
+  const bitrate = found.length > 0 ? found[0].bitrate : undefined;
+  return {
+    platform: 'qq',
+    url,
+    bitrate,
+  };
 }
