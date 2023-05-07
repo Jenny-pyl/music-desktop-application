@@ -176,8 +176,10 @@ export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
 
   }
 
+  console.warn(TAG, 'fetchMusic', response.data);
+
   return {
     platform: 'migu',
     error: '[咪咕] known error',
-  }
+  };
 }

@@ -57,7 +57,6 @@ export interface SongRecord {
   tlyric_url?: string
   quality?: string
   song_id?: string
-  disable?: boolean
 }
 
 /** 歌单 */
@@ -99,9 +98,14 @@ export interface FetchOptions {
   /** Music id */
   mid: string
   /** 多平台重试字段 - 歌曲 */
-  title: string
+  title?: string
   /** 多平台重试字段 - 歌手 */
-  artist: string
+  artist?: string
+  /**
+   * 多平台重试字段 - 模糊匹配，免费歌曲很多非原唱
+   * @defaultValue true
+   */
+  loose?: boolean
   quality?: MusicQuality
 }
 
@@ -131,19 +135,27 @@ async function fetchAutoRetry(
     { search: searchMigu, fetch: fetchMigu },
   ],
 ) {
+  // 多平台搜索依靠这两个条件
+  if (!(options.title && options.artist)) return
+
   // https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L366
   for (const plfm of plfms) {
     // TODO: better query method
     const searchResult = await plfm.search({ keywords: [options.title, options.artist].join(' ') })
     // compare search track and track to check if they are same
     // TODO: better similar compare method (duration, md5)
-    const song = (searchResult.list as SongRecord[]).find(item => (
-      !item.disable &&
-      item.title === options.title &&
-      item.artist === options.artist
+    let song = (searchResult.list as SongRecord[]).find(item => (
+      // 精准匹配
+      item.title === options.title && item.artist === options.artist
     ))
+    if (song && options.loose === false) {
+      song = (searchResult.list as SongRecord[]).find(item => (
+        // 模糊匹配
+        item.title.includes(options.title!) && item.artist.includes(options.artist!)
+      ))
+    }
     if (song) {
-      const fetchResult = await plfm.fetch(options)
+      const fetchResult = await plfm.fetch({ mid: song.mid })
       if (!fetchError(fetchResult)) {
         return fetchResult
       }

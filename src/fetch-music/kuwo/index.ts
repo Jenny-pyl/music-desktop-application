@@ -1,4 +1,6 @@
 import axios from 'axios';
+import cookie from '@/ipc/cookie';
+import { IPC } from '@common/constants';
 import {
   type SearchOptions,
   type SearchResult,
@@ -10,7 +12,6 @@ import {
   defaultFetchOptions,
   getHtmlTextContent,
 } from '../fetch';
-import cookie from '@/ipc/cookie';
 
 const TAG = '[kuwo]';
 
@@ -41,35 +42,20 @@ function convert2songList(record: Record<string, any>) {
   };
 }
 
-async function kw_cookie_get(url: string) {
-  let token = await kw_get_token();
-  let response = await axios.get(url, {
-    headers: { csrf: token[0]?.value ?? '' },
-  });
-
-  if (response.data.success === false) {
-    // token expire, refetch token and start get url - auto retry
-    token = await kw_get_token(true);
-    response = await axios.get(url, {
-      headers: { csrf: token[0]?.value ?? '' },
-    });
-  }
-
-  return response;
-}
-
 async function kw_get_token(forceUpdateCookie = false) {
   const domain = 'https://www.kuwo.cn';
   const name = 'kw_token';
 
   if (forceUpdateCookie) {
-    await axios.get('https://www.kuwo.cn/');
+    await window.ipcRenderer.invoke(IPC.设置酷我cookie, { url: domain, name });
+    // TODO: 使用 Web 天然支持的 set cookie
+    // await axios.get(domain);
   }
 
   let cookies = await cookie.get({ url: domain, name });
   if (!cookies.length) {
     if (!forceUpdateCookie) {
-      // auto retry
+      // auto refresh token
       cookies = await kw_get_token(true);
     }
   }
@@ -93,12 +79,18 @@ export async function searchMusic(options: SearchOptions): Promise<SearchResult>
     [SearchType.歌单]: 'searchPlayListBykeyWord',
   }[search_type];
 
-  const target_url = `https://www.kuwo.cn/api/www/search/${api}?key=${keywords}&pn=${page_num}&rn=${page_size}`;
+  const url = `https://www.kuwo.cn/api/www/search/${api}?key=${keywords}&pn=${page_num}&rn=${page_size}`;
 
-  const response = await kw_cookie_get(target_url);
+  let token = await kw_get_token();
+  let response = await axios.get(url, { headers: { csrf: token[0]?.value ?? '' } });
+  if (response.data.success === false && /* 代表有过期的 token */token.length) {
+    // token expire, refetch token and start get url - auto retry
+    token = await kw_get_token(true);
+    response = await axios.get(url, { headers: { csrf: token[0]?.value ?? '' } });
+  }
 
   if (response.data.success === false || response.data.data === undefined) {
-    console.warn(TAG, 'kw_cookie_get:', response);
+    console.warn(TAG, 'searchMusic', response.data);
 
     return {
       type: search_type,
@@ -136,6 +128,8 @@ export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
       url: data.data.url,
     };
   }
+
+  console.warn(TAG, 'fetchMusic', response.data);
 
   return {
     platform: 'kuwo',

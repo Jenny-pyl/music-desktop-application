@@ -1,4 +1,4 @@
-import { app, session } from 'electron'
+import { session } from 'electron'
 
 const MOBILE_UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30'
@@ -27,7 +27,7 @@ export function initWebRequest() {
         'https://jadeite.migu.cn/*',
       ],
     ],
-  }, (details, callback) => {
+  }, async (details, callback) => {
     details.requestHeaders['User-Agent'] = details.requestHeaders['User-Agent'].replace(`Electron/${[process.versions.electron]} `, '')
 
     const { url } = details
@@ -41,6 +41,11 @@ export function initWebRequest() {
     // 酷我
     else if (url.includes('www.kuwo.cn')) {
       details.requestHeaders.referer = 'https://www.kuwo.cn/'
+
+      // TODO: 使用 Web 天然支持的 set cookie
+      const domain = 'www.kuwo.cn'
+      const cookies = (await session.defaultSession.cookies.get({})).filter(c => c.domain === domain)
+      details.requestHeaders.Cookie = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ')
     }
 
     // 咪咕
@@ -56,13 +61,6 @@ export function initWebRequest() {
       details.requestHeaders['User-Agent'] = 'okhttp/3.12.12'
     }
 
-    // console.log(' ')
-    // console.log(' ')
-    // console.log(' ')
-    // console.log(details.requestHeaders['User-Agent'])
-    // console.log(' ')
-    // console.log(' ')
-    // console.log(' ')
     callback({ requestHeaders: details.requestHeaders })
   })
 }
