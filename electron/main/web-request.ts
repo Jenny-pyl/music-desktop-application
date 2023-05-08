@@ -1,4 +1,5 @@
 import { session } from 'electron'
+import cookie from 'cookie'
 
 const MOBILE_UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30'
@@ -62,5 +63,45 @@ export function initWebRequest() {
     }
 
     callback({ requestHeaders: details.requestHeaders })
+  })
+
+  // 响应头拦截 - 修复 Cookie
+  session.defaultSession.webRequest.onHeadersReceived({
+    urls: ['*://*/*'],
+  }, async (details, callback) => {
+    const cookies = details.responseHeaders?.['Set-Cookie'] ?? []
+    if (cookies[0]) {
+      const cookieObj = cookie.parse(cookies[0])
+      for (const [name, value] of Object.entries(cookieObj)) {
+        if ([
+          'domain',
+          'path',
+          'Size',
+          'http',
+          'expires',
+          'secure',
+          'Max-Age',
+        ].includes(name)) continue
+
+        let expirationDate: number | undefined
+        if (cookieObj.expires) {
+          expirationDate = new Date(cookieObj.expires).getTime()
+        } else if (cookieObj['Max-Age']) {
+          expirationDate = Date.now() + parseInt(cookieObj['Max-Age'])
+        }
+        await session.defaultSession.cookies.set({
+          url: details.url,
+          name,
+          value,
+          path: cookieObj.path,
+          domain: cookieObj.domain,
+          httpOnly: !!cookieObj.http,
+          secure: !!cookieObj.secure,
+          expirationDate,
+        })
+      }
+    }
+
+    callback(details)
   })
 }

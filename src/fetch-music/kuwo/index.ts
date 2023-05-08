@@ -47,9 +47,8 @@ async function kw_get_token(forceUpdateCookie = false) {
   const name = 'kw_token';
 
   if (forceUpdateCookie) {
-    await window.ipcRenderer.invoke(IPC.设置酷我cookie, { url: domain, name });
-    // TODO: 使用 Web 天然支持的 set cookie
-    // await axios.get(domain);
+    // 通过给主域名发请求得到返回头信息中的 Set-Cookie
+    await axios.get(domain);
   }
 
   let cookies = await cookie.get({ url: domain, name });
