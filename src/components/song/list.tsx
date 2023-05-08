@@ -10,8 +10,10 @@ import {
 import {
   type SongRecord,
   fetchMusic_autoRetry,
+  fetchMusic_isError,
 } from '@/fetch-music/fetch'
 import { lyric } from '@/fetch-music/qq'
+import { Player } from '@/fetch-music/play'
 import styles from './list.module.scss'
 
 export default (props: TableProps<SongRecord>) => {
@@ -36,6 +38,11 @@ export default (props: TableProps<SongRecord>) => {
 
     console.log('[歌词]', lyricResult)
     console.log('[音源]', musicResult)
+
+    if (!fetchMusic_isError(musicResult)) {
+      Player.getInstance({ src: musicResult.url }).play()
+    }
+
   }
 
   const tableProps: TableProps<SongRecord> = {
