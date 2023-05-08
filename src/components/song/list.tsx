@@ -11,9 +11,9 @@ import {
   type SongRecord,
   fetchMusic_autoRetry,
   fetchMusic_isError,
-} from '@/fetch-music/fetch'
-import { lyric } from '@/fetch-music/qq'
-import { Player } from '@/fetch-music/play'
+} from '@/music/fetch'
+import { lyric } from '@/music/fetch/qq'
+import { Player } from '@/music/play'
 import Image from '@/components/image'
 import styles from './list.module.scss'
 

@@ -22,7 +22,8 @@ import {
   defaultFetchOptions,
   getHtmlTextContent,
   UnicodeToAscii,
-} from '../fetch';
+} from '..';
+import { FetchResponse } from './types/fetch';
 
 const TAG = '[qq]';
 export const ALL_CATEGORY_ID = 10000000;
@@ -309,7 +310,7 @@ export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
     format: 'json',
     data: JSON.stringify(reqData),
   };
-  const response = await axios.get(target_url, { params });
+  const response = await axios.get<FetchResponse>(target_url, { params });
   const { data } = response;
   const { purl } = data.req_0.data.midurlinfo[0];
 
@@ -322,6 +323,7 @@ export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
   }
 
   const url = data.req_0.data.sip[0] + purl;
+  // @ts-ignore
   const prefix = purl.slice(0, 4);
   const found = Object.values(fileConfig).filter((i) => i.s === prefix);
   const bitrate = found.length > 0 ? found[0].bitrate : undefined;

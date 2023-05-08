@@ -2,10 +2,10 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Input, message } from 'antd'
 import { create } from 'zustand'
-import type { SearchResult, SongRecord } from '@/fetch-music/fetch'
+import type { SearchResult, SongRecord } from '@/music/fetch'
 import SongList from '@/components/song/list'
 import { search2query } from '@/utils'
-import { searchMusic as qqSearch } from '@/fetch-music/qq'
+import { searchMusic as qqSearch } from '@/music/fetch/qq'
 import styles from './index.module.scss'
 
 const { Search } = Input

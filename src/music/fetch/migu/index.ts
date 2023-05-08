@@ -1,3 +1,7 @@
+/**
+ * 音源几乎不可用 2023-05-08 🤔
+ * @deprecated
+ */
 import axios from 'axios';
 import forge from 'node-forge';
 import {
@@ -11,7 +15,7 @@ import {
   MusicBitrate,
   defaultFetchOptions,
   uuid,
-} from '../fetch';
+} from '..';
 
 const TAG = '[migu]';
 

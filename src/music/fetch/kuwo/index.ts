@@ -1,6 +1,5 @@
 import axios from 'axios';
 import cookie from '@/ipc/cookie';
-import { IPC } from '@common/constants';
 import {
   type SearchOptions,
   type SearchResult,
@@ -10,35 +9,34 @@ import {
   type SongListRecord,
   SearchType,
   defaultFetchOptions,
-  getHtmlTextContent,
-} from '../fetch';
+} from '..';
+import type { SearchResponse, SongRecordRaw } from './types/search';
+import type { FetchResponse } from './types/fetch';
 
 const TAG = '[kuwo]';
 
-function convert2song(song: Record<string, any>) {
+function convert2song(song: SongRecordRaw) {
   return <SongRecord>{
-    mid: song.rid,
-    title: getHtmlTextContent(song.name),
-    artist: getHtmlTextContent(song.artist),
-    artist_id: `kwartist_${song.artistid}`,
-    album: getHtmlTextContent(song.album),
-    album_id: `kwalbum_${song.albumid}`,
+    mid: song.rid as any,
+    title: song.name,
+    artist: song.artist,
+    artist_id: song.artistid as any,
+    album: song.album,
+    album_id: song.albumid,
     platform: 'kuwo',
     source_url: `https://www.kuwo.cn/play_detail/${song.rid}`,
     img_url: song.pic,
-    lyric_url: song.rid,
   };
 }
 
-function convert2songList(record: Record<string, any>) {
+function convert2songList(record: SongRecordRaw) {
   return <SongListRecord>{
-    dissid: record.id,
-    title: getHtmlTextContent(record.name),
+    dissid: record.albumid,
+    title: record.name,
     platform: 'kuwo',
-    source_url: `https://www.kuwo.cn/playlist_detail/${record.id}`,
-    img_url: record.img,
-    author: getHtmlTextContent(record.uname),
-    count: record.total,
+    source_url: `https://www.kuwo.cn/playlist_detail/${record.rid}`,
+    img_url: record.pic,
+    author: record.artist,
   };
 }
 
@@ -81,7 +79,7 @@ export async function searchMusic(options: SearchOptions): Promise<SearchResult>
   const url = `https://www.kuwo.cn/api/www/search/${api}?key=${keywords}&pn=${page_num}&rn=${page_size}`;
 
   let token = await kw_get_token();
-  let response = await axios.get(url, { headers: { csrf: token[0]?.value ?? '' } });
+  let response = await axios.get<SearchResponse>(url, { headers: { csrf: token[0]?.value ?? '' } });
   if (response.data.success === false && /* 代表有过期的 token */token.length) {
     // token expire, refetch token and start get url - auto retry
     token = await kw_get_token(true);
@@ -102,13 +100,13 @@ export async function searchMusic(options: SearchOptions): Promise<SearchResult>
 
   return {
     type: search_type,
-    list: response.data.data.list.map((item: Record<string, any>) => search_type === SearchType.单曲
+    list: response.data.data.list.map(item => search_type === SearchType.单曲
       ? convert2song(item)
-      : convert2songList(item),
+      : convert2songList(item) as any,
     ),
     page_num,
     page_size,
-    total: response.data.data.total,
+    total: response.data.data.total as any,
   };
 }
 
@@ -118,7 +116,7 @@ export async function searchMusic(options: SearchOptions): Promise<SearchResult>
 export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
   const url = `http://www.kuwo.cn/api/v1/www/music/playUrl?mid=${options.mid}&type=convert_url3&br=128kmp3`;
 
-  const response = await axios.get(url);
+  const response = await axios.get<FetchResponse>(url);
   const { data } = response;
 
   if (data && data.data && data.data.url) {

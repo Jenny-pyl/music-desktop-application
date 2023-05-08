@@ -1,5 +1,5 @@
 import type { CategoryRecord } from './category'
-import type { SongRecord } from './search'
+import type { SongRecord } from '../..'
 
 export interface DiscResponse {
   "code": 0,
