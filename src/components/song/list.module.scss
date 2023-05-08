@@ -5,13 +5,29 @@
       font-size: 12px;
     }
 
-    .song-img {
+    .song-play-cell {
+      padding: 0 8px !important;
+    }
+
+    .song-play-icon {
+      font-size: 18px;
+      cursor: pointer;
+      color: #999;
+      transition: 150ms;
+
+      &:hover {
+        color: inherit;
+      }
+    }
+
+    .song-portrait {
       height: 24px;
 
       img {
         height: 100%;
         object-fit: contain;
         object-position: center;
+        border-radius: 12px;
       }
     }
   }

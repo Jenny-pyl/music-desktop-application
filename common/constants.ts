@@ -1,5 +1,6 @@
 
 export const IPC = {
-  获取音乐列表: '获取音乐列表',
   登录: '登录',
+  获取cookie: '获取cookie',
+  设置cookie: '设置cookie',
 }
