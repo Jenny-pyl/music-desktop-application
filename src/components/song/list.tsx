@@ -14,6 +14,7 @@ import {
 } from '@/fetch-music/fetch'
 import { lyric } from '@/fetch-music/qq'
 import { Player } from '@/fetch-music/play'
+import Image from '@/components/image'
 import styles from './list.module.scss'
 
 export default (props: TableProps<SongRecord>) => {
@@ -69,7 +70,7 @@ export default (props: TableProps<SongRecord>) => {
         dataIndex: 'img_url',
         render: text => (
           <div className='song-portrait'>
-            <img src={text} />
+            <Image src={text} />
           </div>
         ),
       },

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getCategoryList } from '@/fetch-music/qq'
 import type { CategoryRecord } from '@/fetch-music/qq/types/category'
 import { query2search } from '@/utils'
+import Image from '@/components/image'
 import styles from './index.module.scss'
 
 const findMusic: FC = () => {
@@ -32,7 +33,7 @@ const findMusic: FC = () => {
             onClick={() => clickItem(item)}
           >
             <div className='category-cover-img'>
-              <img src={item.cover_img_url} />
+              <Image src={item.cover_img_url} />
             </div>
             <div className='category-title'>{item.title}</div>
           </div>
