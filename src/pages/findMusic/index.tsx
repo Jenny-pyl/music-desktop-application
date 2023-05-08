@@ -10,7 +10,7 @@ const findMusic: FC = () => {
   const [categoryList, setCategoryList] = useState<CategoryRecord[]>([])
 
   const clickItem = (record: CategoryRecord) => {
-    navigate(`/playList?${query2search({ disstid: record.dissid })}`)
+    navigate(`/indexPage/playList?${query2search({ disstid: record.dissid })}`)
   }
 
   useEffect(() => {
