@@ -74,16 +74,16 @@ app.on('activate', () => {
 
 async function createWindow() {
   win = new BrowserWindow({
-    autoHideMenuBar: true,
-    title: 'Main window',
-    icon: path.join(process.env.PUBLIC, 'favicon.svg'),
     width: 1000,
     height: 740,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
+      // 配合 preload 向 renderer 注入 window.ipcRenderer
       contextIsolation: false,
+      // 允许 Ajax 跨域
       webSecurity: false,
     },
+    // 沉浸式 title 主题
     titleBarStyle: 'hiddenInset',
   })
 

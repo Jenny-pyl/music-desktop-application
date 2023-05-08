@@ -1,4 +1,5 @@
 import axios from 'axios';
+import forge from 'node-forge';
 import {
   type SearchOptions,
   type SearchResult,
@@ -10,7 +11,6 @@ import {
   MusicBitrate,
   defaultFetchOptions,
   uuid,
-  getHtmlTextContent,
 } from '../fetch';
 
 const TAG = '[migu]';
@@ -90,7 +90,7 @@ export async function searchMusic(options: SearchOptions): Promise<SearchResult>
   const text = `${keywords + signature_md5
     }yyapp2d16148780a1dcc7408e06336b98cfd50${deviceId}${timestamp}`;
   const sign = forge.md5
-    .create(text)
+    .create()
     .update(forge.util.encodeUtf8(text))
     .digest()
     .toHex();

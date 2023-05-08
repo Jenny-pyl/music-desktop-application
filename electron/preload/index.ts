@@ -12,4 +12,3 @@ setTimeout(removeLoading, 4999)
 
 // 向渲染进程抛出 ipcRenderer
 window.ipcRenderer = ipcRenderer
-
