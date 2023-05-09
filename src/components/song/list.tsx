@@ -13,7 +13,8 @@ import {
   isResultError,
 } from '@/music/fetch'
 import { lyric } from '@/music/fetch/netease'
-import { Player } from '@/music/play'
+import { Play } from '@/music/play'
+import usePlay from '@/hooks/use-play'
 import Image from '@/components/image'
 import styles from './list.module.scss'
 
@@ -23,28 +24,12 @@ export default (props: TableProps<SongRecord>) => {
     pagination,
     ...omit
   } = props
+  const {
+    play,
+  } = usePlay()
 
   const clickPlay = async (song: SongRecord) => {
-    const [
-      lyricResult,
-      musicResult,
-    ] = await Promise.all([
-      lyric(song.mid),
-      fetchMusic_autoRetry({
-        mid: song.mid,
-        platform: 'netease',
-        title: song.title,
-        artist: song.artist,
-      }),
-    ])
-
-    console.log('[歌词]', lyricResult)
-    console.log('[音源]', musicResult)
-
-    if (!isResultError(musicResult)) {
-      Player.getInstance({ src: musicResult.url }).play()
-    }
-
+    play(song)
   }
 
   const tableProps: TableProps<SongRecord> = {

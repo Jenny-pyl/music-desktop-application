@@ -5,10 +5,11 @@ import {
 
 export interface PlayOptions extends HowlOptions {
   lyric: string
-}
-
-export interface PlayCallback {
-  (evnet: PlayerEvnet, player: Player): void
+  event: (name: EvnetName, player: Player) => void
+  interval: (args: {
+    timestamp: number
+    player: Player
+  }) => void
 }
 
 export interface Player {
@@ -19,7 +20,7 @@ export interface Player {
   timestamp: number
 }
 
-export type PlayerEvnet =
+export type EvnetName =
   | 'load'
   | 'loaderror'
   | 'playerror'
@@ -40,29 +41,59 @@ export type PlayerEvnet =
 export class Play {
   private constructor() { }
   private static players: Player[] = []
-  private static callback: PlayCallback
+  private static options: PlayOptions
+  private static interval: PlayOptions['interval']
+  private static interval_timer: any
+  private static interval_ms = 1000
 
-  private static playerEvent(player: Player) {
-    player.player.on('load', () => this.callback('load', this.getActivePlayer()!))
-    player.player.on('loaderror', () => this.callback('loaderror', this.getActivePlayer()!))
-    player.player.on('playerror', () => this.callback('playerror', this.getActivePlayer()!))
-    player.player.on('play', () => this.callback('play', this.getActivePlayer()!))
-    player.player.on('end', () => this.callback('end', this.getActivePlayer()!))
-    player.player.on('pause', () => this.callback('pause', this.getActivePlayer()!))
-    player.player.on('stop', () => this.callback('stop', this.getActivePlayer()!))
-    player.player.on('mute', () => this.callback('mute', this.getActivePlayer()!))
-    player.player.on('volume', () => this.callback('volume', this.getActivePlayer()!))
-    player.player.on('rate', () => this.callback('rate', this.getActivePlayer()!))
-    player.player.on('seek', () => this.callback('seek', this.getActivePlayer()!))
-    player.player.on('fade', () => this.callback('fade', this.getActivePlayer()!))
-    player.player.on('unlock', () => this.callback('unlock', this.getActivePlayer()!))
+  private static event(...args: Parameters<PlayOptions['event']>) {
+    const [name, player] = args
+    if (([
+      'loaderror',
+      'playerror',
+      'end',
+      'pause',
+      'stop',
+    ] as EvnetName[]).includes(name)) {
+      clearTimeout(this.interval_timer)
+    } else if (name === 'play') {
+      this.runInterval(player)
+    }
+
+    this.options.event(...args)
   }
 
-  public static play(
-    options: PlayOptions,
-    callback: PlayCallback,
-  ) {
-    this.callback = callback
+  private static runEvent(player: Player) {
+    player.player.on('load', () => this.event('load', player))
+    player.player.on('loaderror', () => this.event('loaderror', player))
+    player.player.on('playerror', () => this.event('playerror', player))
+    player.player.on('play', () => this.event('play', player))
+    player.player.on('end', () => this.event('end', player))
+    player.player.on('pause', () => this.event('pause', player))
+    player.player.on('stop', () => this.event('stop', player))
+    player.player.on('mute', () => this.event('mute', player))
+    player.player.on('volume', () => this.event('volume', player))
+    player.player.on('rate', () => this.event('rate', player))
+    player.player.on('seek', () => this.event('seek', player))
+    player.player.on('fade', () => this.event('fade', player))
+    player.player.on('unlock', () => this.event('unlock', player))
+  }
+
+  private static runInterval(player: Player) {
+    const _this = this;
+    (function callback() {
+      _this.interval_timer = setTimeout(() => {
+        _this.options.interval({
+          timestamp: Date.now(),
+          player,
+        })
+        callback()
+      }, _this.interval_ms)
+    })()
+  }
+
+  public static play(options: PlayOptions) {
+    this.options = options
 
     const index = this.players.findIndex(item => item.src === options.src)
     let player: Player
@@ -80,14 +111,14 @@ export class Play {
         src: options.src,
         lyric: options.lyric,
       }
-      this.playerEvent(player)
+      this.runEvent(player)
       this.players.push(player)
     }
 
     this.pause()
     this.setActivePlayer(player)
-
     player.player.play()
+
     return player // ActivePlayer
   }
 
