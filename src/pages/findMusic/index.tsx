@@ -4,6 +4,7 @@ import { getTopSongList } from '@/music/fetch/netease'
 import type { TopSongListRecord } from '@/music/fetch'
 import { query2search } from '@/utils'
 import Image from '@/components/image'
+import { ROUTER_PATH } from '@/routes/router'
 import styles from './index.module.scss'
 
 const findMusic: FC = () => {
@@ -11,7 +12,10 @@ const findMusic: FC = () => {
   const [categoryList, setCategoryList] = useState<TopSongListRecord[]>([])
 
   const clickItem = (record: TopSongListRecord) => {
-    navigate(`/indexPage/playList?${query2search({ disstid: record.dissid })}`)
+    navigate({
+      pathname: ROUTER_PATH.play,
+      search: query2search({ disstid: record.dissid }),
+    })
   }
 
   useEffect(() => {
