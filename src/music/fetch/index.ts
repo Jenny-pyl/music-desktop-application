@@ -146,11 +146,17 @@ export interface FetchResultOk {
   url: string
   bitrate?: string
 }
-export interface FetchResultError {
+export type FetchResult = FetchResultOk | ResultError
+
+// ------------------------
+
+export interface ResultError {
   platform: MusicPlatform
   error: string
 }
-export type FetchResult = FetchResultOk | FetchResultError
+export function isResultError(x: any): x is ResultError {
+  return x.error
+}
 
 // ----------------------------------------------------------------------
 
@@ -184,7 +190,7 @@ async function fetchAutoRetry(
     }
     if (song) {
       const fetchResult = await plfm.fetch({ mid: song.mid })
-      if (!fetchMusic_isError(fetchResult)) {
+      if (!isResultError(fetchResult)) {
         return fetchResult
       }
     }
@@ -250,21 +256,17 @@ export async function fetchMusic_autoRetry(options: FetchOptions): Promise<Fetch
   // https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L338-L403 - 多平台切换逻辑
 
   let fetchResult = await (options.platform === 'qq' ? fetchQQ(options) : fetchNetease(options))
-  if (fetchMusic_isError(fetchResult)) {
+  if (isResultError(fetchResult)) {
     const fetchResultOk = await fetchAutoRetry(options)
     if (fetchResultOk) {
       fetchResult = fetchResultOk
     }
   }
 
-  if (fetchMusic_isError(fetchResult)) {
+  if (isResultError(fetchResult)) {
     // 多平台拉取均失败
     message.warning('VIP 音乐需要会员才可以播放哦 ^_^')
   }
 
   return fetchResult
-}
-
-export function fetchMusic_isError(x: any): x is FetchResultError {
-  return x.error
 }

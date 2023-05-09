@@ -10,7 +10,7 @@ import {
 import {
   type SongRecord,
   fetchMusic_autoRetry,
-  fetchMusic_isError,
+  isResultError,
 } from '@/music/fetch'
 import { lyric } from '@/music/fetch/netease'
 import { Player } from '@/music/play'
@@ -41,7 +41,7 @@ export default (props: TableProps<SongRecord>) => {
     console.log('[歌词]', lyricResult)
     console.log('[音源]', musicResult)
 
-    if (!fetchMusic_isError(musicResult)) {
+    if (!isResultError(musicResult)) {
       Player.getInstance({ src: musicResult.url }).play()
     }
 

@@ -6,7 +6,7 @@ import type { SearchResult, SongRecord } from '@/music/fetch'
 import SongList from '@/components/song/list'
 import { query2search, search2query } from '@/utils'
 import { ROUTER_PATH } from '@/routes/router'
-import { searchMusic as qqSearch } from '@/music/fetch/qq'
+import { searchMusic as searchNetease } from '@/music/fetch/netease'
 import styles from './index.module.scss'
 
 const { Search } = Input
@@ -56,7 +56,7 @@ export function SongSearch() {
     if (!keywords) return
 
     setLoading(true)
-    qqSearch({ keywords })
+    searchNetease({ keywords })
       .then(setData)
       .finally(() => setLoading(false))
   }, [keywords])
