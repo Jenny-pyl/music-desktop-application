@@ -17,21 +17,27 @@ export function initWebRequest() {
         'music.qq.com',
         'imgcache.qq.com',
       ].map(url => `https://${url}/*`),
+      // 网易
+      ...[
+        'music.163.com',
+        'interface3.music.163.com',
+      ].map(url => `https://${url}/*`),
       // 酷我
       ...[
-        '*://www.kuwo.cn/*',
-      ],
+        'www.kuwo.cn',
+      ].map(url => `*://${url}/*`),
       // 咪咕
       ...[
-        'https://music.migu.cn/*',
-        'https://app.c.nf.migu.cn/*',
-        'https://jadeite.migu.cn/*',
-      ],
+        'music.migu.cn',
+        'app.c.nf.migu.cn',
+        'jadeite.migu.cn',
+      ].map(url => `https://${url}/*`),
     ],
   }, async (details, callback) => {
     details.requestHeaders['User-Agent'] = details.requestHeaders['User-Agent'].replace(`Electron/${[process.versions.electron]} `, '')
-
     const { url } = details
+    // TODO: 使用 Web 天然支持的 set cookie
+    const cookies = await session.defaultSession.cookies.get({})
 
     // QQ
     if (url.includes('qq.com')) {
@@ -39,14 +45,20 @@ export function initWebRequest() {
       details.requestHeaders.referer = 'https://y.qq.com/'
     }
 
+    // 网易
+    if (url.includes('://music.163.com/') || url.includes('://interface3.music.163.com/')) {
+      details.requestHeaders.referer = 'https://music.163.com/'
+      details.requestHeaders.Cookie = cookies
+        .filter(c => ['music.163.com', 'interface3.music.163.com'].includes(c.domain!))
+        .map(cookie => `${cookie.name}=${cookie.value}`).join('; ')
+    }
+
     // 酷我
     else if (url.includes('www.kuwo.cn')) {
       details.requestHeaders.referer = 'https://www.kuwo.cn/'
-
-      // TODO: 使用 Web 天然支持的 set cookie
-      const domain = 'www.kuwo.cn'
-      const cookies = (await session.defaultSession.cookies.get({})).filter(c => c.domain === domain)
-      details.requestHeaders.Cookie = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ')
+      details.requestHeaders.Cookie = cookies
+        .filter(c => c.domain === 'www.kuwo.cn')
+        .map(cookie => `${cookie.name}=${cookie.value}`).join('; ')
     }
 
     // 咪咕
@@ -69,10 +81,14 @@ export function initWebRequest() {
   session.defaultSession.webRequest.onHeadersReceived({
     urls: ['*://*/*'],
   }, async (details, callback) => {
-    const cookies = details.responseHeaders?.['Set-Cookie'] ?? []
+    const cookies = (details.responseHeaders?.['set-cookie'] || details.responseHeaders?.['Set-Cookie']) ?? []
     if (cookies[0]) {
       const cookieObj = cookie.parse(cookies[0])
-      for (const [name, value] of Object.entries(cookieObj)) {
+      for (const [nameRaw, value] of Object.entries(cookieObj)) {
+        // 兼容大小写
+        const name = nameRaw.toLowerCase()
+        cookieObj[name] = value
+
         if ([
           'domain',
           'path',
@@ -80,14 +96,14 @@ export function initWebRequest() {
           'http',
           'expires',
           'secure',
-          'Max-Age',
+          'max-age',
         ].includes(name)) continue
 
         let expirationDate: number | undefined
         if (cookieObj.expires) {
           expirationDate = new Date(cookieObj.expires).getTime()
-        } else if (cookieObj['Max-Age']) {
-          expirationDate = Date.now() + parseInt(cookieObj['Max-Age'])
+        } else if (cookieObj['max-age']) {
+          expirationDate = Date.now() + parseInt(cookieObj['max-age'])
         }
         await session.defaultSession.cookies.set({
           url: details.url,

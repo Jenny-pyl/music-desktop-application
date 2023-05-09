@@ -1,3 +1,7 @@
+/**
+ * 音源几乎不可用 2023-05-08 🤔
+ * @deprecated
+ */
 import axios from 'axios';
 import forge from 'node-forge';
 import {
@@ -11,7 +15,7 @@ import {
   MusicBitrate,
   defaultFetchOptions,
   uuid,
-} from '../fetch';
+} from '..';
 
 const TAG = '[migu]';
 
@@ -35,7 +39,7 @@ function convert2song(song: Record<string, any>) {
 
 function convert2songList(record: Record<string, any>) {
   return <SongListRecord>{
-    dissid: record.id,
+    discId: record.id,
     title: record.name,
     platform: 'migu',
     source_url: `https://music.migu.cn/v3/music/playlist/${record.id}`,

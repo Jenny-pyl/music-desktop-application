@@ -1,4 +1,4 @@
-export interface CategoryResponse {
+export interface TopSongListResponse {
   "code": 0,
   "subcode": 0,
   "message": "",
@@ -35,11 +35,4 @@ export interface CategoryResponse {
   }
 }
 
-export type CategoryRecordRaw = CategoryResponse['data']['list'][0]
-
-export interface CategoryRecord {
-  dissid: string
-  cover_img_url: string
-  title: string
-  source_url: string
-}
+export type TopSongListRecordRaw = TopSongListResponse['data']['list'][0]

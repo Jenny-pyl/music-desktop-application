@@ -2,10 +2,11 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Input, message } from 'antd'
 import { create } from 'zustand'
-import type { SearchResult, SongRecord } from '@/fetch-music/fetch'
+import type { SearchResult, SongRecord } from '@/music/fetch'
 import SongList from '@/components/song/list'
-import { search2query } from '@/utils'
-import { searchMusic as qqSearch } from '@/fetch-music/qq'
+import { query2search, search2query } from '@/utils'
+import { ROUTER_PATH } from '@/routes/router'
+import { searchMusic as qqSearch } from '@/music/fetch/qq'
 import styles from './index.module.scss'
 
 const { Search } = Input
@@ -30,7 +31,7 @@ const useSearchStore = create<SearchStore>()((set) => ({
 
 export function SongSearch() {
   const location = useLocation()
-  const isSearchPage = location.pathname === '/indexPage/search'
+  const isSearchPage = location.pathname === ROUTER_PATH.search
   const navigate = useNavigate()
   const {
     keywords = isSearchPage ? search2query(location.search).keywords : undefined,
@@ -45,10 +46,10 @@ export function SongSearch() {
       message.warning('请输入关键词搜索 ^_^')
       return
     }
-    navigate(
-      `/indexPage/search?keywords=${value}`,
-      { replace: isSearchPage },
-    )
+    navigate({
+      pathname: ROUTER_PATH.search,
+      search: query2search({ keywords: value }),
+    }, { replace: isSearchPage })
   }
 
   useEffect(() => {

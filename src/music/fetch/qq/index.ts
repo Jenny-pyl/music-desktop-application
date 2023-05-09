@@ -1,17 +1,16 @@
 import axios from 'axios';
-import type { CategoryRecord, CategoryResponse } from './types/category';
-import type {
-  SearchResponse,
-  SongListRecordRaw,
-  SongRecordRaw,
-} from './types/search';
+import type { TopsResponse } from './types/tops';
+import type { TopSongListResponse } from './types/top-song-list';
 import type {
   DiscRecordRaw,
   DiscResponse,
-  DiscResult,
 } from './types/disc';
-import type { LyricResponse, LyricResult } from './types/lyric';
+import type { LyricResponse } from './types/lyric';
 import {
+  type TopSongOptions,
+  type TopSongListRecord,
+  type DiscResult,
+  type LyricResult,
   type SearchOptions,
   type SearchResult,
   type SongRecord,
@@ -22,7 +21,13 @@ import {
   defaultFetchOptions,
   getHtmlTextContent,
   UnicodeToAscii,
-} from '../fetch';
+} from '..';
+import type {
+  SearchResponse,
+  SongListRecordRaw,
+  SongRecordRaw,
+} from './types/search';
+import type { FetchResponse } from './types/fetch';
 
 const TAG = '[qq]';
 export const ALL_CATEGORY_ID = 10000000;
@@ -59,7 +64,7 @@ function convert2song(song: SongRecordRaw) {
 
 function convert2songList(record: SongListRecordRaw) {
   return <SongListRecord>{
-    dissid: record.dissid,
+    discId: record.dissid,
     title: getHtmlTextContent(record.dissname),
     platform: 'qq',
     source_url: `https://y.qq.com/n/ryqq/playlist/${record.dissid}`,
@@ -99,48 +104,49 @@ function qq_is_playable(song: DiscRecordRaw) {
 // ----------------------------------------------------------------------
 
 /**
- * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L38
- */
-export async function getCategoryList({
-  filterId = ALL_CATEGORY_ID,
-  offset = 0,
-}: {
-  filterId?: number,
-  offset?: number,
-} = {}) {
-  const url =
-    'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg' +
-    `?picmid=1&rnd=${Math.random()}&g_tk=732560869` +
-    '&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8' +
-    '&notice=0&platform=yqq.json&needNewCode=0' +
-    `&categoryId=${filterId}&sortId=5&sin=${offset}&ein=${29 + offset}`;
-
-  const response = await axios.get<CategoryResponse>(url);
-  return response.data.data.list.map<CategoryRecord>(item => ({
-    dissid: item.dissid,
-    cover_img_url: item.imgurl,
-    title: getHtmlTextContent(item.dissname),
-    source_url: `https://y.qq.com/n/ryqq/playlist/${item.dissid}`,
-  }));
-}
-
-/**
+ * 1. 获取热榜 - 即 `getTopSongList(filterId === 'toplist')`
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L10
  */
-export async function getTopCategoryList() {
+async function getTops() {
   const url =
     'https://c.y.qq.com/v8/fcg-bin/fcg_myqq_toplist.fcg?g_tk=5381&inCharset=utf-8&outCharset=utf-8&notice=0&format=json&uin=0&needNewCode=1&platform=h5';
 
-  const response = await axios.get(url);
-  return response.data.data.topList.map((item: Record<string, string>) => ({
+  const response = await axios.get<TopsResponse>(url);
+  return response.data.data.topList.map<TopSongListRecord>(item => ({
+    dissid: item.id,
     cover_img_url: item.picUrl,
-    id: `qqtoplist_${item.id}`,
     source_url: `https://y.qq.com/n/yqq/toplist/${item.id}.html`,
     title: item.topTitle,
   }));
 }
 
 /**
+ * 2. 根据热榜取歌单
+ * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L38
+ */
+export async function getTopSongList({
+  filterId = ALL_CATEGORY_ID,
+  offset = 0,
+  size = 24,
+}: TopSongOptions = {}) {
+  const url =
+    'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg' +
+    `?picmid=1&rnd=${Math.random()}&g_tk=732560869` +
+    '&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8' +
+    '&notice=0&platform=yqq.json&needNewCode=0' +
+    `&categoryId=${filterId}&sortId=5&sin=${offset}&ein=${size + offset}`;
+
+  const response = await axios.get<TopSongListResponse>(url);
+  return response.data.data.list.map<TopSongListRecord>(item => ({
+    dissid: item.dissid,
+    cover_img_url: item.imgurl,
+    source_url: `https://y.qq.com/n/ryqq/playlist/${item.dissid}`,
+    title: getHtmlTextContent(item.dissname),
+  }));
+}
+
+/**
+ * 3. 根据歌单获取歌单下所有音乐
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L228
  */
 export async function getDisc(dissid: string): Promise<DiscResult> {
@@ -157,19 +163,20 @@ export async function getDisc(dissid: string): Promise<DiscResult> {
   return {
     list: data.cdlist[0].songlist.map((item) => convertDisc2song(item)),
     info: {
-      cover_img_url: data.cdlist[0].logo,
+      discId: dissid,
       title: data.cdlist[0].dissname,
-      dissid,
+      img_url: data.cdlist[0].logo,
+      platform: 'qq',
       source_url: `https://y.qq.com/n/ryqq/playlist/${dissid}`,
     },
   };
 }
 
 /**
- * 获取歌词
+ * 4.1 获取歌词
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L517
  */
-export async function lyric(songmid: string): Promise<LyricResult> {
+export async function lyric(songmid: string | number): Promise<LyricResult> {
   const url =
     'https://i.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg' +
     `?songmid=${songmid}&g_tk=5381&format=json&inCharset=utf8&outCharset=utf-8&nobase64=1`;
@@ -186,6 +193,7 @@ export async function lyric(songmid: string): Promise<LyricResult> {
 }
 
 /**
+ * 4.2 搜索音乐
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L340
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L153 - 调用处
  */
@@ -240,6 +248,7 @@ export async function searchMusic(options: SearchOptions): Promise<SearchResult>
 }
 
 /**
+ * 5. 获取音乐
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/qq.js#L418
  */
 export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
@@ -309,7 +318,7 @@ export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
     format: 'json',
     data: JSON.stringify(reqData),
   };
-  const response = await axios.get(target_url, { params });
+  const response = await axios.get<FetchResponse>(target_url, { params });
   const { data } = response;
   const { purl } = data.req_0.data.midurlinfo[0];
 
@@ -322,6 +331,7 @@ export async function fetchMusic(options: FetchOptions): Promise<FetchResult> {
   }
 
   const url = data.req_0.data.sip[0] + purl;
+  // @ts-ignore
   const prefix = purl.slice(0, 4);
   const found = Object.values(fileConfig).filter((i) => i.s === prefix);
   const bitrate = found.length > 0 ? found[0].bitrate : undefined;

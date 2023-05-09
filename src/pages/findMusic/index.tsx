@@ -1,21 +1,25 @@
 import { FC, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getCategoryList } from '@/fetch-music/qq'
-import type { CategoryRecord } from '@/fetch-music/qq/types/category'
+import { getTopSongList } from '@/music/fetch/netease'
+import type { TopSongListRecord } from '@/music/fetch'
 import { query2search } from '@/utils'
 import Image from '@/components/image'
+import { ROUTER_PATH } from '@/routes/router'
 import styles from './index.module.scss'
 
 const findMusic: FC = () => {
   const navigate = useNavigate()
-  const [categoryList, setCategoryList] = useState<CategoryRecord[]>([])
+  const [categoryList, setCategoryList] = useState<TopSongListRecord[]>([])
 
-  const clickItem = (record: CategoryRecord) => {
-    navigate(`/indexPage/playList?${query2search({ disstid: record.dissid })}`)
+  const clickItem = (record: TopSongListRecord) => {
+    navigate({
+      pathname: ROUTER_PATH.play,
+      search: query2search({ disstid: record.dissid }),
+    })
   }
 
   useEffect(() => {
-    getCategoryList().then(list => {
+    getTopSongList().then(list => {
       setCategoryList(list)
     })
   }, [])
@@ -23,7 +27,7 @@ const findMusic: FC = () => {
   return (
     <div className={[styles.findMusic, 'd-flex flex-column h-100'].join(' ')}>
       <div className='category-info p-2'>
-        <h2 className='mb-0'>QQ 音乐热榜</h2>
+        <h2 className='mb-0'>🔥 Netease 热榜</h2>
       </div>
       <div className='category-list p-2'>
         {categoryList.map(item => (

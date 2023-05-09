@@ -1,6 +1,3 @@
-import type { CategoryRecord } from './category'
-import type { SongRecord } from './search'
-
 export interface DiscResponse {
   "code": 0,
   "subcode": 0,
@@ -124,8 +121,3 @@ export interface DiscResponse {
 }
 
 export type DiscRecordRaw = DiscResponse['cdlist'][0]['songlist'][0]
-
-export interface DiscResult {
-  list: SongRecord[]
-  info: CategoryRecord
-}
