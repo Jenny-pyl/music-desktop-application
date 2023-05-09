@@ -1,20 +1,20 @@
 import { message } from 'antd'
 import {
-  searchMusic as searchQQ,
-  fetchMusic as fetchQQ,
-} from './qq'
+  searchMusic as searchNetease,
+  fetchMusic as fetchNetease,
+} from './netease'
 import {
   searchMusic as searchKuwo,
   fetchMusic as fetchKuwo,
 } from './kuwo'
 import {
-  searchMusic as searchNetease,
-  fetchMusic as fetchNetease,
-} from './netease'
+  searchMusic as searchQQ,
+  fetchMusic as fetchQQ,
+} from './qq'
 
 export type MusicPlatform =
-  | 'qq'
   | 'netease'
+  | 'qq'
   | 'kuwo'
   | 'migu'
 
@@ -34,6 +34,36 @@ export enum MusicBitrate {
   SQ = '999kbps',
   ZQ = '999kbps',
   PQ = '128kbps',
+}
+
+export interface TopSongOptions {
+  /** 热榜 ID */
+  filterId?: string | number
+  offset?: number
+  /** @defaultValue 24 */
+  size?: number
+}
+
+export interface TopSongListRecord {
+  // qq 音乐的接口也是一坨 💩 有接口用 dissid 有接口用 disstid 不清楚是什么意思
+  dissid: string | number
+  cover_img_url: string
+  source_url: string
+  title: string
+}
+
+export interface LyricResult {
+  /** 歌词 */
+  lyric: string
+  /** 歌词-翻译 */
+  tlyric: string
+}
+
+export interface SearchOptions {
+  keywords: string
+  page_num?: number
+  page_size?: number
+  search_type?: SearchType
 }
 
 /** 单曲 */
@@ -67,15 +97,9 @@ export interface SongListRecord {
   platform: MusicPlatform
   source_url: string
   img_url: string
-  author: string
-  count: number
-}
 
-export interface SearchOptions {
-  keywords: string
-  page_num?: number
-  page_size?: number
-  search_type?: SearchType
+  author?: string
+  count?: number
 }
 
 export interface SearchResultSong {
@@ -94,9 +118,17 @@ export interface SearchResultSongList {
 }
 export type SearchResult = SearchResultSong | SearchResultSongList
 
+/** 唱片结果 */
+export interface DiscResult {
+  list: SongRecord[]
+  info: SongListRecord
+}
+
 export interface FetchOptions {
   /** Music id */
-  mid: string
+  mid: string | number
+  /** 多平台重试字段 - 当前音源平台 ['netease', 'qq'] */
+  platform?: MusicPlatform
   /** 多平台重试字段 - 歌曲 */
   title?: string
   /** 多平台重试字段 - 歌手 */
@@ -128,7 +160,7 @@ async function fetchAutoRetry(
   options: FetchOptions,
   plfms = [
     { search: searchKuwo, fetch: fetchKuwo },
-    { search: searchNetease, fetch: fetchNetease },
+    { search: searchQQ, fetch: fetchQQ }, // QQ 大都需要 VIP，放到最后
   ],
 ) {
   // 多平台搜索依靠这两个条件
@@ -187,6 +219,17 @@ export function uuid() {
   return strTemp.slice(strTemp.lastIndexOf('/') + 1) // remove prefix (e.g. blob:null/, blob:www.test.com/, ...)
 }
 
+export function getParameterByName(name: string, url: string) {
+  if (!url) url = window.location.href;
+  name = name.replace(/[\[\]]/g, '\\$&'); // eslint-disable-line no-useless-escape
+  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`);
+
+  const results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
 /**
  * 源码链路
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/listen1.html#L1675
@@ -206,7 +249,7 @@ export function uuid() {
 export async function fetchMusic_autoRetry(options: FetchOptions): Promise<FetchResult> {
   // https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L338-L403 - 多平台切换逻辑
 
-  let fetchResult = await fetchQQ(options)
+  let fetchResult = await (options.platform === 'qq' ? fetchQQ(options) : fetchNetease(options))
   if (fetchMusic_isError(fetchResult)) {
     const fetchResultOk = await fetchAutoRetry(options)
     if (fetchResultOk) {

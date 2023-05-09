@@ -1,4 +1,4 @@
-export interface CategoryResponse {
+export interface TopSongListResponse {
   "code": 0,
   "subcode": 0,
   "message": "",
@@ -35,12 +35,4 @@ export interface CategoryResponse {
   }
 }
 
-export type CategoryRecordRaw = CategoryResponse['data']['list'][0]
-
-export interface CategoryRecord {
-  // qq 音乐的接口也是一坨 💩 有接口用 dissid 有接口用 disstid 不清楚是什么意思
-  dissid: string
-  cover_img_url: string
-  title: string
-  source_url: string
-}
+export type TopSongListRecordRaw = TopSongListResponse['data']['list'][0]

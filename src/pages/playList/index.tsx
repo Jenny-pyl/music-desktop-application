@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Skeleton } from 'antd'
 import { search2query } from '@/utils'
-import { getDisc } from '@/music/fetch/qq'
-import type { DiscResult } from '@/music/fetch/qq/types/disc'
+import { getDisc } from '@/music/fetch/netease'
+import type { DiscResult } from '@/music/fetch'
 import SongList from '@/components/song/list'
 import Image from '@/components/image'
 import styles from './index.module.scss'
@@ -25,8 +25,8 @@ export default () => {
     <div className={[styles.playList, 'd-flex flex-column h-100'].join(' ')}>
       <div className='play-info d-flex p-2'>
         <div className='play-info-cover-img'>
-          {disc?.info.cover_img_url
-            ? <Image src={disc?.info.cover_img_url} />
+          {disc?.info.img_url
+            ? <Image src={disc?.info.img_url} />
             : <Skeleton.Image active style={{ width: 124, height: 124 }} />}
         </div>
         <div className='play-info-details p-2'>
