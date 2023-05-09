@@ -63,7 +63,7 @@ const Layouts: FC = () => {
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
     setActiveMenuKey(e.key)
-    navigate(`/indexPage${pathname}`);
+    navigate(`${pathname}`);
   }
 
   const loginRedirect = () => {
