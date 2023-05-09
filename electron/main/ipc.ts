@@ -3,6 +3,7 @@ import {
   ipcMain,
   session,
 } from 'electron'
+import moment from 'moment'
 import { Sql } from './sql'
 import { IPC } from '@common/constants'
 
@@ -47,5 +48,26 @@ export class Ipc {
         session.defaultSession.cookies.set(details)
       },
     )
+
+    ipcMain.handle(IPC.创建歌单, async (_, args) => {
+      try {
+        const { listName, userId } = args
+        const createTime = moment().format('yyyy-MM-DD hh:mm:ss');
+        const updateTime = createTime;
+        console.log('创建歌单', {listName, userId, createTime, updateTime})
+        const res = await sql.insert('songList', {listName, userId, createTime, updateTime})
+        if (res) {
+          return {
+            code: 1,
+            msg: res,
+          };
+        }
+      } catch (e) {
+        return {
+          code: 0,
+          msg: e,
+        }
+      }
+    })
   }
 }

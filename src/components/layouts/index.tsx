@@ -21,6 +21,7 @@ import {
   UserOutlined,
   CaretRightOutlined,
   CheckOutlined,
+  PlusOutlined,
 } from '@ant-design/icons'
 import {
   BofangIcon,
@@ -30,7 +31,9 @@ import {
   AixinIcon,
   ShezhiIcon,
   PifuIcon,
+  LiebiaoIcon,
 } from '@/components/icons'
+import CreateListModal from './components/createListModal'
 import {
   useGlobalColor,
   useMusicInfo,
@@ -59,6 +62,7 @@ const Layouts: FC = () => {
   const { playing, setPlaying } = useMusicInfo();
   const userInfo = locaStorage.get<UserInfo | null>('userInfo');
   const [activeMenuKey, setActiveMenuKey] = useState<string>(ROUTER_PATH.home);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
@@ -135,7 +139,27 @@ const Layouts: FC = () => {
             }
           </div>
           <Menu
-            items={menuItems}
+            items={[...menuItems!, {
+              label: (<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>我创建的歌单</div>
+                <PlusOutlined onClick={() => setModalOpen(true)} />
+              </div>),
+              key: 'myCreate',
+              // icon: <LiebiaoIcon />,
+              type: 'group',
+              children: [
+                {
+                  key: '1',
+                  label: '歌单1',
+                  icon: <LiebiaoIcon />,
+                },
+                {
+                  key: '2',
+                  label: '歌单2',
+                  icon: <LiebiaoIcon />,
+                },
+              ]
+            }]}
             onClick={menuItemClick}
             selectedKeys={activeMenuKey ? [activeMenuKey] : undefined}
           />
@@ -161,6 +185,7 @@ const Layouts: FC = () => {
           <div className="b-right"></div>
         </div>
       </div>
+      <CreateListModal modalOpen={modalOpen} setModalOpen={setModalOpen}/>
     </div>
   )
 }
