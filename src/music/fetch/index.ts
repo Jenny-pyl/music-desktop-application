@@ -170,7 +170,9 @@ async function fetchAutoRetry(
   ],
 ) {
   // 多平台搜索依靠这两个条件
-  if (!(options.title && options.artist)) return
+  const title = getHtmlTextContent(options.title)
+  const artist = getHtmlTextContent(options.artist)
+  if (!(title && artist)) return
 
   // https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L366
   for (const plfm of plfms) {
@@ -180,12 +182,12 @@ async function fetchAutoRetry(
     // TODO: better similar compare method (duration, md5)
     let song = (searchResult.list as SongRecord[]).find(item => (
       // 精准匹配
-      item.title === options.title && item.artist === options.artist
+      item.title === title && item.artist === artist
     ))
-    if (song && options.loose === false) {
+    if (!song && options.loose !== false) {
       song = (searchResult.list as SongRecord[]).find(item => (
         // 模糊匹配
-        item.title.includes(options.title!) && item.artist.includes(options.artist!)
+        item.title.includes(title) && item.artist.includes(artist)
       ))
     }
     if (song) {
@@ -206,9 +208,9 @@ export function defaultFetchOptions(options: SearchOptions) {
   return options as Required<SearchOptions>
 }
 
-export function getHtmlTextContent(html: string) {
+export function getHtmlTextContent(html = '') {
   const parser = new DOMParser()
-  return parser.parseFromString(html, 'text/html').body.textContent ?? ''
+  return parser.parseFromString(html, 'text/html').body.textContent
 }
 
 export function UnicodeToAscii(str: string) {
