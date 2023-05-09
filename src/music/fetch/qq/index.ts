@@ -60,7 +60,7 @@ function convert2song(song: SongRecordRaw) {
 
 function convert2songList(record: SongListRecordRaw) {
   return <SongListRecord>{
-    dissid: record.dissid,
+    discId: record.dissid,
     title: getHtmlTextContent(record.dissname),
     platform: 'qq',
     source_url: `https://y.qq.com/n/ryqq/playlist/${record.dissid}`,

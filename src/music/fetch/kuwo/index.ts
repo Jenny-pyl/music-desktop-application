@@ -17,10 +17,10 @@ const TAG = '[kuwo]';
 
 function convert2song(song: SongRecordRaw) {
   return <SongRecord>{
-    mid: song.rid as any,
+    mid: song.rid,
     title: song.name,
     artist: song.artist,
-    artist_id: song.artistid as any,
+    artist_id: song.artistid,
     album: song.album,
     album_id: song.albumid,
     platform: 'kuwo',
@@ -31,7 +31,7 @@ function convert2song(song: SongRecordRaw) {
 
 function convert2songList(record: SongRecordRaw) {
   return <SongListRecord>{
-    dissid: record.albumid,
+    discId: record.albumid,
     title: record.name,
     platform: 'kuwo',
     source_url: `https://www.kuwo.cn/playlist_detail/${record.rid}`,

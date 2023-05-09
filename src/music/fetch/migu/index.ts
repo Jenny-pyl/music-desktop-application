@@ -39,7 +39,7 @@ function convert2song(song: Record<string, any>) {
 
 function convert2songList(record: Record<string, any>) {
   return <SongListRecord>{
-    dissid: record.id,
+    discId: record.id,
     title: record.name,
     platform: 'migu',
     source_url: `https://music.migu.cn/v3/music/playlist/${record.id}`,

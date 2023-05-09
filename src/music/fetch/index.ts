@@ -8,9 +8,9 @@ import {
   fetchMusic as fetchKuwo,
 } from './kuwo'
 import {
-  searchMusic as searchMigu,
-  fetchMusic as fetchMigu,
-} from './migu'
+  searchMusic as searchNetease,
+  fetchMusic as fetchNetease,
+} from './netease'
 
 export type MusicPlatform =
   | 'qq'
@@ -39,15 +39,15 @@ export enum MusicBitrate {
 /** 单曲 */
 export interface SongRecord {
   /** Music id */
-  mid: string
+  mid: string | number
   /** 歌曲 */
   title: string
   /** 歌手 */
   artist: string
-  artist_id: string
+  artist_id: string | number
   /** 专辑 */
   album: string
-  album_id: string
+  album_id: string | number
   img_url: string
   platform: MusicPlatform
   source_url: string
@@ -61,8 +61,8 @@ export interface SongRecord {
 
 /** 歌单 */
 export interface SongListRecord {
-  // qq 音乐的接口也是一坨 💩 有接口用 dissid 有接口用 disstid
-  dissid: string
+  /** 这里统一叫 discId，即唱片 ID */
+  discId: string | number
   title: string
   platform: MusicPlatform
   source_url: string
@@ -128,7 +128,7 @@ async function fetchAutoRetry(
   options: FetchOptions,
   plfms = [
     { search: searchKuwo, fetch: fetchKuwo },
-    { search: searchMigu, fetch: fetchMigu },
+    { search: searchNetease, fetch: fetchNetease },
   ],
 ) {
   // 多平台搜索依靠这两个条件
