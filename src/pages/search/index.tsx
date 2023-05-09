@@ -30,7 +30,7 @@ const useSearchStore = create<SearchStore>()((set) => ({
 
 export function SongSearch() {
   const location = useLocation()
-  const isSearchPage = location.pathname === '/search'
+  const isSearchPage = location.pathname === '/indexPage/search'
   const navigate = useNavigate()
   const {
     keywords = isSearchPage ? search2query(location.search).keywords : undefined,
@@ -46,7 +46,7 @@ export function SongSearch() {
       return
     }
     navigate(
-      `/search?keywords=${value}`,
+      `/indexPage/search?keywords=${value}`,
       { replace: isSearchPage },
     )
   }
