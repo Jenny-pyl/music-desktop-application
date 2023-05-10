@@ -18,6 +18,7 @@ export default (props: React.ImgHTMLAttributes<HTMLImageElement> & {
 
   useEffect(() => {
     if (src2) {
+      setSrc(coverImage)
       refImg.current.onload = () => { setSrc(src2) }
       refImg.current.src = src2
     }

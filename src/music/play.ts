@@ -73,19 +73,17 @@ export class Play {
   private constructor() { }
   private static options: PlayOptions
   private static interval_timer: any
-  private static interval_ms = 1000
+  private static interval_ms = 999
 
   public static players: Player[] = []
 
   private static event(...args: Parameters<PlayOptions['event']>) {
-    /*
     const [name, player] = args
-    if (event.unPlay.includes(name)) {
+    if (EVENT.unPlay.includes(name)) {
       clearTimeout(this.interval_timer)
     } else if (name === 'play') {
       this.runInterval(player)
     }
-    */
 
     this.options.event(...args)
   }
@@ -106,16 +104,16 @@ export class Play {
     player.player.on('unlock', () => this.event('unlock', player))
   }
 
-  private static runInterval() {
+  private static runInterval(player?: Player) {
     const _this = this
     clearTimeout(_this.interval_timer);
     (function callback() {
       _this.interval_timer = setTimeout(() => {
-        const player = _this.getActivePlayer()
+        player ??= _this.getActivePlayer()
         if (player && player.player.playing()) {
           _this.options.interval({
             timestamp: Date.now(),
-            player,
+            player: player,
           })
         }
         callback()
@@ -125,7 +123,7 @@ export class Play {
 
   public static play(options: PlayOptions) {
     this.options = options
-    this.runInterval()
+    // this.runInterval()
 
     const index = this.players.findIndex(item => item.src === options.src)
     let player: Player

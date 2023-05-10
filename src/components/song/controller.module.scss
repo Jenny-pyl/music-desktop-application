@@ -2,15 +2,6 @@
   position: relative;
 
   :global {
-    .process-box {
-      position: absolute;
-      height: 3px;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #efefef;
-    }
-
     .bar-left {
       position: absolute;
       left: 0;
@@ -40,14 +31,22 @@
 
   :global {
     .play-pause {
-      font-size: 38px;
+      font-size: 37px;
     }
   }
 }
 
 .controller-panel {
+  background-image: linear-gradient(rgba(0, 0, 0, 1) 77%, rgba(58, 20, 62, 1));
+  color: #efefef;
+
   :global {
     .panel-header {}
+
+    .panel-close {
+      position: relative;
+      z-index: 1;
+    }
 
     .panel-main {
       height: 0;
@@ -65,9 +64,29 @@
 
     .panel-song-info {}
 
-    .pang-lyric {
+    .panel-lyric {
       height: 0;
       flex-grow: 1;
+      overflow-x: hidden;
+      overflow-y: auto;
+
+      .lyric-line {
+        .line-text {
+          display: inline-block;
+          font-size: 17px;
+          line-height: 2.7;
+          opacity: .47;
+          transition: 999ms;
+          transform-origin: left;
+        }
+
+        &.active {
+          .line-text {
+            opacity: 1;
+            transform: scale(1.5);
+          }
+        }
+      }
     }
 
     .panel-img {
@@ -84,15 +103,6 @@
       }
     }
 
-    .process-box {
-      position: absolute;
-      height: 3px;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #efefef;
-    }
-
     .panel-footer {
       position: relative;
       height: 60px;
@@ -101,5 +111,20 @@
 }
 
 .controller-process {
-  :global {}
+  :global {
+    .process-bar {
+      transition: 400ms;
+    }
+  }
+}
+
+// -------------------
+
+.process-box {
+  position: absolute;
+  height: 2px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #efefef;
 }
