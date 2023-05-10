@@ -1,7 +1,6 @@
 import axios from 'axios';
 import cookie from '@/ipc/cookie';
 import forge, { cipher } from 'node-forge';
-import async from 'async';
 import type { TopsResponse } from './types/tops';
 import type { TopSongListResponse } from './types/top-song-list';
 import type {
@@ -300,20 +299,15 @@ export async function getDisc(dissid: string): Promise<DiscResult> {
     max_allow_size,
   );
 
-  return new Promise<DiscResult>(resolve => {
-    async.concat<DisctrackIdsRaw, SongRecord>(
-      trackIdsArray,
-      (trackIds, callback) => { // 这里不能用 async function - 很坑 😭
-        getDiscSongDetail(trackIds).then(list => callback(null, list));
-      },
-      (err, list) => {
-        resolve({
-          list: list as SongRecord[],
-          info,
-        });
-      }
-    );
-  });
+  const list: SongRecord[] = []
+  for (const trackIds of trackIdsArray) {
+    list.push(...await getDiscSongDetail(trackIds));
+  }
+
+  return {
+    list,
+    info,
+  };
 }
 
 /**

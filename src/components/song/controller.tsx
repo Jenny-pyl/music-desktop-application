@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Drawer } from 'antd'
 import { CloseCircleOutlined } from '@ant-design/icons'
 import {
@@ -14,7 +14,7 @@ import { useGlobalColor } from '@/store'
 import styles from './controller.module.scss'
 
 export function ControllerPlay() {
-  const { color } = useGlobalColor();
+  const { color } = useGlobalColor()
   const {
     playing,
     song,
@@ -42,18 +42,27 @@ export function ControllerPlay() {
 export function ControllerPanel(props: {
   onClose: () => void,
 }) {
-  const { color } = useGlobalColor();
   const {
     song,
     lyric,
     playing,
+    playInfo,
   } = usePlay()
+  const lyricLines = useMemo(() => lyric ? parseLyric(lyric) : [], [lyric])
+  const activeLine = useMemo(() => {
+    let closest = lyricLines[0]
+    const seek = playInfo?.seek ?? 0
+    const delay = 4
+    for (const line of lyricLines) {
+      if (Math.abs(line.time - seek) < Math.abs(closest.time - seek) - delay) {
+        closest = line
+      }
+    }
+    return closest
+  }, [lyricLines, playInfo?.seek])
 
   return (
-    <div
-      className={[styles['controller-panel'], 'd-flex flex-column h-100'].join(' ')}
-      style={{ color }}
-    >
+    <div className={[styles['controller-panel'], 'd-flex flex-column h-100'].join(' ')}>
       <div
         className='panel-header text-right'
         onClick={props.onClose}
@@ -68,7 +77,7 @@ export function ControllerPanel(props: {
             <Image src={song?.img_url} />
           </div>
         </div>
-        <div className='panel-right h-100 d-flex flex-column'>
+        <div className='panel-right h-100 d-flex flex-column pb-3'>
           <div className='panel-song-info pb-3'>
             <h2>{song?.title ?? '--'}</h2>
             <div>
@@ -76,17 +85,20 @@ export function ControllerPanel(props: {
               <span className='ml-3'>专辑: {song?.album ?? '-'}</span>
             </div>
           </div>
-          <div className='pang-lyric overflow-auto'>
-            {lyric?.split('\n').map((line, idx) => (
-              <div key={idx}>
-                <span>{line}</span>
+          <div className='panel-lyric'>
+            {lyricLines.map((line, idx) => (
+              <div
+                key={idx}
+                className={['lyric-line', activeLine === line && 'active'].filter(Boolean).join(' ')}
+              >
+                <span className='line-text'>{line.text}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
       <div className='panel-footer d-flex align-items-center justify-content-around'>
-        <div className='process-box'>
+        <div className={styles['process-box']}>
           <ControllerProcess />
         </div>
         <ControllerPlay />
@@ -96,12 +108,10 @@ export function ControllerPanel(props: {
 }
 
 export function ControllerProcess() {
-  const { color } = useGlobalColor();
+  const { color } = useGlobalColor()
   const {
     playInfo,
   } = usePlay()
-
-  console.log((playInfo?.percent ?? 0) * 100)
 
   return (
     <div className={[styles['controller-process'], 'h-100'].join(' ')}>
@@ -117,7 +127,6 @@ export function ControllerProcess() {
 }
 
 export function FooterController() {
-  const { color } = useGlobalColor();
   const {
     playing,
     song,
@@ -126,13 +135,10 @@ export function FooterController() {
 
   return (
     <div className={[styles['footer-controller'], 'h-100'].join(' ')}>
-      <div className='process-box'>
+      <div className={styles['process-box']}>
         <ControllerProcess />
       </div>
-      <div
-        className='bar d-flex align-items-center justify-content-center h-100'
-        style={{ color }}
-      >
+      <div className='bar d-flex align-items-center justify-content-center h-100'>
         <div className='bar-left d-flex align-items-center'>
           <span
             className={['song-img cursor-pointer ml-3', playing && 'animate-rotate'].filter(Boolean).join(' ')}
@@ -153,6 +159,7 @@ export function FooterController() {
       </div>
 
       <Drawer
+        destroyOnClose
         placement='bottom'
         closable={false}
         onClose={() => setVisiblePanel(false)}
@@ -164,4 +171,46 @@ export function FooterController() {
       </Drawer>
     </div>
   )
+}
+
+// ------------------------------------------------------------------------------
+
+// https://dev.to/mcanam/javascript-lyric-synchronizer-4i15
+// lrc (String) - lrc file text
+function parseLyric(lrc: string) {
+  // will match "[00:00.00] ooooh yeah!" or "[00:00.0000] ooooh yeah!"
+  // note: i use named capturing group
+  const regex = /^\[(?<time>\d{2}:\d{2}(.\d{2,4})?)\](?<text>.*)/;
+
+  // split lrc string to individual lines
+  const lines = lrc.split("\n");
+
+  const output: { time: number, text: string }[] = [];
+
+  lines.forEach(line => {
+    const match = line.match(regex);
+
+    // if doesn't match, return.
+    if (match == null) return;
+
+    const { time, text } = match.groups!;
+
+    output.push({
+      time: parseTime(time),
+      text: text.trim()
+    });
+  });
+
+  return output;
+}
+
+// parse formated time
+// "03:24.73" => 204.73 (total time in seconds)
+function parseTime(time: string) {
+  const minsec = time.split(":");
+
+  const min = parseInt(minsec[0]) * 60;
+  const sec = parseFloat(minsec[1]);
+
+  return min + sec;
 }

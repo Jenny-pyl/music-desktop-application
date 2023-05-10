@@ -18,10 +18,6 @@
       &:hover {
         color: inherit;
       }
-
-      &.active {
-        color: cyan;
-      }
     }
 
     .song-portrait {
@@ -32,6 +28,7 @@
         object-fit: contain;
         object-position: center;
         border-radius: 12px;
+        box-shadow: 0 0 10px -4px rgba(51, 51, 51, 0.77);
       }
     }
   }

@@ -10,6 +10,7 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons'
 import type { SongRecord } from '@/music/fetch'
+import { useGlobalColor } from '@/store'
 import usePlay from '@/hooks/use-play'
 import Image from '@/components/image'
 import styles from './list.module.scss'
@@ -21,15 +22,11 @@ export default (props: TableProps<SongRecord>) => {
     loading,
     ...omit
   } = props
+  const { color } = useGlobalColor()
   const {
     playing,
-    event,
-    playInfo,
-    timestamp,
     fetching,
     loading: loadSong,
-    song,
-
     play,
     pause,
   } = usePlay()
@@ -57,8 +54,9 @@ export default (props: TableProps<SongRecord>) => {
           const active = playing === record
           return (
             <div
-              className={['song-play-icon', active && 'active'].filter(Boolean).join(' ')}
+              className='song-play-icon'
               onClick={() => clickPlay(record)}
+              style={{ color: active ? color : undefined }}
             >
               {loadSong === record
                 ? <LoadingOutlined />
