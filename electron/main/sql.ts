@@ -32,31 +32,27 @@ export class Sql {
     })
   }
 
-  objToString(obj: Record<any, any>) {
-    return JSON.stringify(obj).replace(/[{}""]/g, '').replace(/[:""]/g, ' ');
+  objKey(obj: Record<any, any>) {
+    return JSON.stringify(Object.keys(obj).join(',')).replace(/[\[\]]/g, '')
   }
 
-  arrToString(arr: Array<any>) {
-    return JSON.stringify(arr).replace(/[\[\]]/g, '');
+  objVaule(obj: Record<any, any>) {
+    return JSON.stringify(Object.values(obj).join(',')).replace(/[\[\]]/g, '')
   }
-
-  // // DDL
-  // create(tabelname: string, params: Record<string, string>) {
-  //   this.database.run(`CREATE TABLE ${tabelname} (${this.objToString(params)})`, function (err) {
-  //     if (err) {
-  //       return console.log(err)
-  //     }
-  //     console.log(`CREATE TABLE ${tabelname}`)
-  //   })
-  // }
-
-  // drop(tabelname: string) {
-  //   this.database.run(`DROP TABLE ${tabelname}`)
-  // }
 
   // DML
-  insert(tabelname: string, values: Array<any>) {
-    this.database.run(`INSERT INTO ${tabelname} VALUES(${this.arrToString(values)})`)
+  insert(tabelname: string, values: Record<string, any>): Promise<any> {
+    console.log('dml', this.objKey(values), this.objVaule(values))
+    return new Promise((resolve, reject) => {
+      this.database.run(`INSERT INTO ${tabelname} (${this.objKey(values)}) VALUES(${this.objVaule(values)})`, function(err) {
+        console.log('err', err)
+        if (err) {
+          reject(`insert error: ${err}`)
+        }else {
+          resolve('新增成功')
+        }
+      })
+    })
   }
 
   update(tabelname: string, statement: string) {

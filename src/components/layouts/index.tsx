@@ -21,13 +21,16 @@ import {
   UserOutlined,
   CaretRightOutlined,
   CheckOutlined,
+  PlusOutlined,
 } from '@ant-design/icons'
 import {
   ShezhiIcon,
   PifuIcon,
+  LiebiaoIcon,
 } from '@/components/icons'
 import { FooterController } from '@/components/song/controller'
 import { useGlobalColor } from '@/store'
+import CreateListModal from './components/createListModal'
 import { menuItems, themeItems } from '@/constants'
 import { SongSearch } from '@/pages/search'
 import { locaStorage } from '@/utils'
@@ -51,11 +54,12 @@ const Layouts: FC = () => {
   const { color, setColor } = useGlobalColor();
   const userInfo = locaStorage.get<UserInfo | null>('userInfo');
   const [activeMenuKey, setActiveMenuKey] = useState<string>(ROUTER_PATH.home);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
     setActiveMenuKey(e.key)
-    navigate(`/indexPage${pathname}`);
+    navigate(`${pathname}`);
   }
 
   const loginRedirect = () => {
@@ -127,7 +131,27 @@ const Layouts: FC = () => {
             }
           </div>
           <Menu
-            items={menuItems}
+            items={[...menuItems!, {
+              label: (<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>我创建的歌单</div>
+                <PlusOutlined onClick={() => setModalOpen(true)} />
+              </div>),
+              key: 'myCreate',
+              // icon: <LiebiaoIcon />,
+              type: 'group',
+              children: [
+                {
+                  key: '1',
+                  label: '歌单1',
+                  icon: <LiebiaoIcon />,
+                },
+                {
+                  key: '2',
+                  label: '歌单2',
+                  icon: <LiebiaoIcon />,
+                },
+              ]
+            }]}
             onClick={menuItemClick}
             selectedKeys={activeMenuKey ? [activeMenuKey] : undefined}
           />
@@ -139,6 +163,7 @@ const Layouts: FC = () => {
       <div className="footer">
         <FooterController />
       </div>
+      <CreateListModal modalOpen={modalOpen} setModalOpen={setModalOpen} />
     </div>
   )
 }

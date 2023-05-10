@@ -15,6 +15,7 @@
     "node": "^16.0.0"
   },
   "dependencies": {
+    "moment": "^2.29.4",
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {

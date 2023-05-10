@@ -6,8 +6,6 @@ import {
   XiazaiIcon,
   AixinIcon,
   ShoucangIcon,
-  YinyueIcon,
-  LiebiaoIcon,
 } from '@/components/icons';
 
 export const menuItems: MenuProps['items'] = [
@@ -43,24 +41,6 @@ export const menuItems: MenuProps['items'] = [
     icon: <ShoucangIcon />,
   },
   { type: 'divider' },
-  {
-    label: '我创建的歌单',
-    key: 'myCreate',
-    // icon: <LiebiaoIcon />,
-    type: 'group',
-    children: [
-      {
-        key: '1',
-        label: '歌单1',
-        icon: <LiebiaoIcon />,
-      },
-      {
-        key: '2',
-        label: '歌单2',
-        icon: <LiebiaoIcon />,
-      },
-    ]
-  }
 ]
 
 export const themeItems: {label: string, key: string}[] = [
