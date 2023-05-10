@@ -88,9 +88,8 @@ export default function usePlay() {
   const lyricActiveLine = useMemo(() => {
     let closest = lyricLines[0]
     const seek = playInfo?.seek ?? 0
-    const delay = 4 // 换行延时
     for (const line of lyricLines) {
-      if (Math.abs(line.time - seek) < Math.abs(closest.time - seek) - delay) {
+      if (Math.abs(line.time - seek) < Math.abs(closest.time - seek)) {
         closest = line
       }
     }
@@ -134,6 +133,9 @@ export default function usePlay() {
     }
 
     if (src) {
+      setSong(song)
+      setLyric(lyric)
+
       Play.play({
         mid: song.mid,
         src,
@@ -150,8 +152,6 @@ export default function usePlay() {
           if (EVENT.unPlay.includes(name)) {
             setPlaying(undefined)
           } else if (EVENT.play.includes(name)) {
-            setSong(song)
-            setLyric(lyric)
             setPlaying(song)
           }
         },

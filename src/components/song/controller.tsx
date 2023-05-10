@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Drawer, Spin } from 'antd'
 import { CloseCircleOutlined } from '@ant-design/icons'
 import {
@@ -20,11 +20,17 @@ export function ControllerPlay() {
     loading,
     playing,
     song,
+    songList,
     play,
     pause,
     prev,
     next,
   } = usePlay()
+
+  const clickPlay = () => {
+    const _song = song ?? songList?.[0]
+    _song && play(_song)
+  }
 
   return (
     <Spin spinning={!!fetching || !!loading}>
@@ -36,7 +42,7 @@ export function ControllerPlay() {
         <span className='play-pause'>
           {playing
             ? <ZantingIcon onClick={pause} />
-            : <BofangIcon onClick={() => song && play(song)} />
+            : <BofangIcon onClick={clickPlay} />
           }
         </span>
         <XiayishouIcon onClick={next} />
@@ -54,6 +60,27 @@ export function ControllerPanel(props: {
     lyricActiveLine,
     playing,
   } = usePlay()
+  const refPanelLyric = useRef<HTMLDivElement>()
+
+  useEffect(() => {
+    if (!refPanelLyric.current) return
+
+    const index = lyricLines.findIndex(l => l === lyricActiveLine)
+    if (index <= -1) return
+
+    const panelHeight = refPanelLyric.current.offsetHeight
+    const lineHeight = 45.9 // 写死即可，动态获取耗费性能
+    const showLines = panelHeight / 45.9 // 当前视口显示的行数
+    const thanCurrentLines = index - showLines / 2 // 超过视口中间行数
+
+    if (thanCurrentLines > 0) { // 歌词播放到了中间以下
+      refPanelLyric.current.scrollTo({
+        left: 0,
+        top: lineHeight * thanCurrentLines + /* 偏移到中间位置 */lineHeight, // 滚动超过行数高度
+        behavior: 'smooth',
+      })
+    }
+  }, [lyricActiveLine])
 
   return (
     <div className={[styles['controller-panel'], 'd-flex flex-column h-100'].join(' ')}>
@@ -79,13 +106,20 @@ export function ControllerPanel(props: {
               <span className='ml-3'>专辑: {song?.album ?? '-'}</span>
             </div>
           </div>
-          <div className='panel-lyric'>
+          <div
+            className='panel-lyric'
+            ref={refPanelLyric as any}
+          >
             {lyricLines.map((line, idx) => (
               <div
                 key={idx}
-                className={['lyric-line', lyricActiveLine === line && 'active'].filter(Boolean).join(' ')}
+                className={[
+                  'lyric-line',
+                  // TODO: 切歌时候歌词 “乱跳”
+                  lyricActiveLine === line && 'active',
+                ].filter(Boolean).join(' ')}
               >
-                <span className='line-text'>{line.text}</span>
+                <span className={['line-text', !line.text && 'empty'].filter(Boolean).join(' ')}>{line.text || '-'}</span>
               </div>
             ))}
           </div>

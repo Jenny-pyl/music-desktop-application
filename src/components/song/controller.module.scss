@@ -86,6 +86,10 @@
           opacity: .47;
           transition: 999ms;
           transform-origin: left;
+
+          &.empty {
+            color: transparent;
+          }
         }
 
         &.active {

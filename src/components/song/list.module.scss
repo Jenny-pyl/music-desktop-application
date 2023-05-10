@@ -1,5 +1,11 @@
 .song-list-table {
   :global {
+    .ant-table-row.active-playing {
+      td {
+        border-color: transparent;
+      }
+    }
+
     tr {
       color: #666;
       font-size: 12px;
