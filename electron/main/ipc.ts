@@ -60,13 +60,30 @@ export class Ipc {
             code: 0,
             msg: '歌单名称重复',
           }
-        }else {
-          const res = await sql.insert('songList', {listName, userId, createTime, updateTime})
+        } else {
+          const res = await sql.insert('songList', { listName, userId, createTime, updateTime })
           return {
             code: 1,
             msg: res,
           };
         }
+      } catch (e) {
+        return {
+          code: 0,
+          msg: e,
+        }
+      }
+    })
+
+    ipcMain.handle(IPC.获取全部歌单, async (_, args) => {
+      try {
+        const { userId } = args
+        const res = await sql.selectAll('songList', `WHERE userId = '${userId}'`)
+        return {
+          code: 1,
+          msg: '成功',
+          data: res,
+        };
       } catch (e) {
         return {
           code: 0,

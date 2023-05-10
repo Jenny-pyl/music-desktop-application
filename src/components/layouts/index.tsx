@@ -36,11 +36,12 @@ import { menuItems, themeItems } from '@/constants'
 import { SongSearch } from '@/pages/search'
 import { locaStorage } from '@/utils'
 import { ROUTER_PATH } from '@/routes/router'
+import { useSongList } from '@/hooks/use-songList';
 
 import styles from './index.module.scss'
 
 export type UserInfo = {
-  id: string;
+  id: number;
   username: string;
   avatarUrl: string;
   age: number;
@@ -58,6 +59,9 @@ const Layouts: FC = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   // 避免按钮不适用主题色
   const [modal, contextHolder] = Modal.useModal();
+  const [songList] = useSongList(userInfo?.id);
+
+  console.log('songList', songList);
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
@@ -154,20 +158,12 @@ const Layouts: FC = () => {
                 <PlusOutlined onClick={() => handleCreate()} />
               </div>),
               key: 'myCreate',
-              // icon: <LiebiaoIcon />,
               type: 'group',
-              children: [
-                {
-                  key: '1',
-                  label: '歌单1',
-                  icon: <LiebiaoIcon />,
-                },
-                {
-                  key: '2',
-                  label: '歌单2',
-                  icon: <LiebiaoIcon />,
-                },
-              ]
+              children: songList?.map((item) => ({
+                key: item.listId,
+                label: item.listName,
+                icon: <LiebiaoIcon />,
+              }))
             }]}
             onClick={menuItemClick}
             selectedKeys={activeMenuKey ? [activeMenuKey] : undefined}
