@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -35,8 +36,13 @@ body {
   }
 }
 
-#app, .app-container {
+#app,
+.app-container {
   height: 100%;
+}
+
+.footer-controller-drawer .ant-drawer-body {
+  padding: 0;
 }
 
 .icon {
@@ -568,4 +574,22 @@ body {
 .user-select-none {
   user-select: none;
   -webkit-user-select: none;
+}
+
+.animate-rotate {
+  animation: animate-rotate linear infinite 22s;
+}
+
+@keyframes animate-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

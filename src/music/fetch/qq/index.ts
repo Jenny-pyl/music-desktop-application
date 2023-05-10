@@ -19,7 +19,6 @@ import {
   type FetchResult,
   SearchType,
   defaultFetchOptions,
-  getHtmlTextContent,
   UnicodeToAscii,
 } from '..';
 import type {
@@ -29,16 +28,16 @@ import type {
 } from './types/search';
 import type { FetchResponse } from './types/fetch';
 
-const TAG = '[qq]';
+const TAG = '[QQ]';
 export const ALL_CATEGORY_ID = 10000000;
 
 function convertDisc2song(song: DiscRecordRaw) {
   return <SongRecord>{
     mid: song.songmid,
-    title: getHtmlTextContent(song.songname),
-    artist: getHtmlTextContent(song.singer[0].name),
+    title: song.songname,
+    artist: song.singer[0].name,
     artist_id: `qqartist_${song.singer[0].mid}`,
-    album: getHtmlTextContent(song.albumname),
+    album: song.albumname,
     album_id: `qqalbum_${song.albummid}`,
     img_url: qq_get_image_url(song.albummid, 'album'),
     platform: 'qq',
@@ -50,10 +49,10 @@ function convertDisc2song(song: DiscRecordRaw) {
 function convert2song(song: SongRecordRaw) {
   return <SongRecord>{
     mid: song.mid,
-    title: getHtmlTextContent(song.name),
-    artist: getHtmlTextContent(song.singer[0].name),
+    title: song.name,
+    artist: song.singer[0].name,
     artist_id: `qqartist_${song.singer[0].mid}`,
-    album: getHtmlTextContent(song.album.name),
+    album: song.album.name,
     album_id: `qqalbum_${song.album.mid}`,
     img_url: qq_get_image_url(song.album.mid, 'album'),
     platform: 'qq',
@@ -65,7 +64,7 @@ function convert2song(song: SongRecordRaw) {
 function convert2songList(record: SongListRecordRaw) {
   return <SongListRecord>{
     discId: record.dissid,
-    title: getHtmlTextContent(record.dissname),
+    title: record.dissname,
     platform: 'qq',
     source_url: `https://y.qq.com/n/ryqq/playlist/${record.dissid}`,
     img_url: record.imgurl,
@@ -141,7 +140,7 @@ export async function getTopSongList({
     dissid: item.dissid,
     cover_img_url: item.imgurl,
     source_url: `https://y.qq.com/n/ryqq/playlist/${item.dissid}`,
-    title: getHtmlTextContent(item.dissname),
+    title: item.dissname,
   }));
 }
 

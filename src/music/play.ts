@@ -3,29 +3,136 @@ import {
   Howl,
 } from 'howler'
 
+export interface PlayOptions extends HowlOptions {
+  /** Music ID */
+  mid: string | number
+  lyric: string
+  /**
+   * - `pause` 从暂停恢复
+   * - `stop` 从头开始 
+   */
+  mode?: 'pause' | 'stop'
+  event: (name: EventName, player: Player) => void
+  interval: (args: {
+    timestamp: number
+    player: Player
+  }) => void
+}
+
+export interface Player {
+  /** Music ID */
+  mid: string | number
+  src: HowlOptions['src']
+  lyric: string
+  player: Howl
+  active: boolean
+  timestamp: number
+}
+
+export type EventName =
+  | 'load'
+  | 'loaderror'
+  | 'playerror'
+  | 'play'
+  | 'end'
+  | 'pause'
+  | 'stop'
+  | 'mute'
+  | 'volume'
+  | 'rate'
+  | 'seek'
+  | 'fade'
+  | 'unlock'
+
+export const EVENT: {
+  play: EventName[]
+  unPlay: EventName[]
+  unLoading: EventName[]
+} = {
+  play: [
+    'play',
+  ],
+  unPlay: [
+    'loaderror',
+    'playerror',
+    'end',
+    'pause',
+    'stop',
+  ],
+  unLoading: [
+    'play',
+    'load',
+    'loaderror',
+  ],
+}
+
 /**
  * 单例模式更加可控
  */
-export class Player {
+export class Play {
   private constructor() { }
-  private static instance = new Player
+  private static options: PlayOptions
+  private static interval_timer: any
+  private static interval_ms = 1000
 
-  private static players: {
-    src: HowlOptions['src']
-    player: Howl
-    active: boolean
-    timestamp: number
-  }[] = []
+  public static players: Player[] = []
 
-  public static getInstance(options: HowlOptions) {
+  private static event(...args: Parameters<PlayOptions['event']>) {
+    /*
+    const [name, player] = args
+    if (event.unPlay.includes(name)) {
+      clearTimeout(this.interval_timer)
+    } else if (name === 'play') {
+      this.runInterval(player)
+    }
+    */
+
+    this.options.event(...args)
+  }
+
+  private static runEvent(player: Player) {
+    player.player.on('load', () => this.event('load', player))
+    player.player.on('loaderror', () => this.event('loaderror', player))
+    player.player.on('playerror', () => this.event('playerror', player))
+    player.player.on('play', () => this.event('play', player))
+    player.player.on('end', () => this.event('end', player))
+    player.player.on('pause', () => this.event('pause', player))
+    player.player.on('stop', () => this.event('stop', player))
+    player.player.on('mute', () => this.event('mute', player))
+    player.player.on('volume', () => this.event('volume', player))
+    player.player.on('rate', () => this.event('rate', player))
+    player.player.on('seek', () => this.event('seek', player))
+    player.player.on('fade', () => this.event('fade', player))
+    player.player.on('unlock', () => this.event('unlock', player))
+  }
+
+  private static runInterval() {
+    const _this = this
+    clearTimeout(_this.interval_timer);
+    (function callback() {
+      _this.interval_timer = setTimeout(() => {
+        const player = _this.getActivePlayer()
+        if (player && player.player.playing()) {
+          _this.options.interval({
+            timestamp: Date.now(),
+            player,
+          })
+        }
+        callback()
+      }, _this.interval_ms)
+    })()
+  }
+
+  public static play(options: PlayOptions) {
+    this.options = options
+    this.runInterval()
+
     const index = this.players.findIndex(item => item.src === options.src)
+    let player: Player
     if (index > -1) {
-      for (const item of this.players) {
-        item.active = false
-      }
-      this.players[index].active = true
+      player = this.players[index]
     } else {
-      const player = {
+      player = {
         timestamp: Date.now(),
         player: new Howl({
           src: options.src,
@@ -33,23 +140,53 @@ export class Player {
           html5: true, // Force to HTML5 so that the audio can stream in (best for large files).
         }),
         active: true,
+        mid: options.mid,
         src: options.src,
+        lyric: options.lyric,
       }
-      for (const item of this.players) {
-        item.active = false
-      }
+      this.runEvent(player)
       this.players.push(player)
     }
 
-    return this.instance
+    if (this.getActivePlayer() !== player) {
+      this.stop()
+    }
+
+    this.setActivePlayer(player)
+    player.player.play()
+
+    return player // ActivePlayer
   }
 
-  play() {
-    for (const player of Player.players) {
+  public static getActivePlayer() {
+    for (const player of this.players) {
       if (player.active) {
-        // 播放 active player
-        !player.player.playing() && player.player.play()
-      } else {
+        return player
+      }
+    }
+  }
+
+  public static setActivePlayer(player: Player) {
+    for (const _player of this.players) {
+      _player.active = _player.src === player.src
+    }
+  }
+
+  public static pause(player?: Player) {
+    if (player) {
+      player.player.pause()
+    } else {
+      for (const player of this.players) {
+        player.player.playing() && player.player.pause()
+      }
+    }
+  }
+
+  public static stop(player?: Player) {
+    if (player) {
+      player.player.pause()
+    } else {
+      for (const player of this.players) {
         player.player.playing() && player.player.stop()
       }
     }

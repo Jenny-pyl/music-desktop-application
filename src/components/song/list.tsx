@@ -4,16 +4,13 @@ import {
 } from 'antd'
 import {
   PictureOutlined,
+  PauseCircleOutlined,
   PlayCircleOutlined,
   PlaySquareOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons'
-import {
-  type SongRecord,
-  fetchMusic_autoRetry,
-  fetchMusic_isError,
-} from '@/music/fetch'
-import { lyric } from '@/music/fetch/netease'
-import { Player } from '@/music/play'
+import type { SongRecord } from '@/music/fetch'
+import usePlay from '@/hooks/use-play'
 import Image from '@/components/image'
 import styles from './list.module.scss'
 
@@ -21,30 +18,28 @@ export default (props: TableProps<SongRecord>) => {
   const {
     className,
     pagination,
+    loading,
     ...omit
   } = props
+  const {
+    playing,
+    event,
+    playInfo,
+    timestamp,
+    fetching,
+    loading: loadSong,
+    song,
+
+    play,
+    pause,
+  } = usePlay()
 
   const clickPlay = async (song: SongRecord) => {
-    const [
-      lyricResult,
-      musicResult,
-    ] = await Promise.all([
-      lyric(song.mid),
-      fetchMusic_autoRetry({
-        mid: song.mid,
-        platform: 'netease',
-        title: song.title,
-        artist: song.artist,
-      }),
-    ])
-
-    console.log('[歌词]', lyricResult)
-    console.log('[音源]', musicResult)
-
-    if (!fetchMusic_isError(musicResult)) {
-      Player.getInstance({ src: musicResult.url }).play()
+    if (playing === song) {
+      pause()
+    } else {
+      play(song)
     }
-
   }
 
   const tableProps: TableProps<SongRecord> = {
@@ -52,19 +47,25 @@ export default (props: TableProps<SongRecord>) => {
     size: 'small',
     className: [className, styles['song-list-table']].filter(Boolean).join(' '),
     pagination: false,
+    loading: loading || !!fetching,
     columns: [
       {
         title: <PlaySquareOutlined />,
         dataIndex: '-',
         className: 'song-play-cell',
-        render: (_, record) => (
-          <div
-            className='song-play-icon'
-            onClick={() => clickPlay(record)}
-          >
-            <PlayCircleOutlined />
-          </div>
-        ),
+        render(_, record) {
+          const active = playing === record
+          return (
+            <div
+              className={['song-play-icon', active && 'active'].filter(Boolean).join(' ')}
+              onClick={() => clickPlay(record)}
+            >
+              {loadSong === record
+                ? <LoadingOutlined />
+                : active ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            </div>
+          )
+        },
       },
       {
         title: <PictureOutlined />,
