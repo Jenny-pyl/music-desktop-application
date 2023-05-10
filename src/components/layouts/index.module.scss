@@ -14,7 +14,7 @@
     .header {
       height: 50px;
       opacity: 0.5;
-      box-shadow: 100px 1px 8px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 10px -4px rgba(0, 0, 0, 0.14);
       background-color: rgb(251, 249, 249);
 
       .h-left {
@@ -96,27 +96,7 @@
 
     .footer {
       height: 60px;
-      width: 100%;
-
-      .process {
-        height: 3px;
-        width: 100%;
-      }
-
-      .bar {
-        height: 57px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin: 0 10px;
-
-        .b-center {
-          display: flex;
-          width: 20%;
-          justify-content: space-around;
-          align-items: center;
-        }
-      }
+      box-shadow: -1px 0 10px -4px rgba(0, 0, 0, 0.14);
     }
   }
 }

@@ -23,18 +23,11 @@ import {
   CheckOutlined,
 } from '@ant-design/icons'
 import {
-  BofangIcon,
-  ZantingIcon,
-  ShangyishouIcon,
-  XiayishouIcon,
-  AixinIcon,
   ShezhiIcon,
   PifuIcon,
 } from '@/components/icons'
-import {
-  useGlobalColor,
-  useMusicInfo,
-} from '@/store'
+import { FooterController } from '@/components/song/controller'
+import { useGlobalColor } from '@/store'
 import { menuItems, themeItems } from '@/constants'
 import { SongSearch } from '@/pages/search'
 import { locaStorage } from '@/utils'
@@ -56,7 +49,6 @@ const Layouts: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { color, setColor } = useGlobalColor();
-  const { playing, setPlaying } = useMusicInfo();
   const userInfo = locaStorage.get<UserInfo | null>('userInfo');
   const [activeMenuKey, setActiveMenuKey] = useState<string>(ROUTER_PATH.home);
 
@@ -144,22 +136,8 @@ const Layouts: FC = () => {
           <Outlet />
         </div>
       </div>
-      <div className="footer" onClick={() => navigate('/musicPlayer')}>
-        <div className="process" style={{ background: color }} />
-        <div className='bar'>
-          <div className="b-left">
-            <AixinIcon />
-          </div>
-          <div className="b-center">
-            <ShangyishouIcon style={{ color }} />
-            {playing
-              ? <ZantingIcon style={{ color, fontSize: 38 }} onClick={() => setPlaying(!playing)} />
-              : <BofangIcon style={{ color, fontSize: 38 }} onClick={() => setPlaying(!playing)} />
-            }
-            <XiayishouIcon style={{ color }} />
-          </div>
-          <div className="b-right"></div>
-        </div>
+      <div className="footer">
+        <FooterController />
       </div>
     </div>
   )

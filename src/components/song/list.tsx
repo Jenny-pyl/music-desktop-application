@@ -9,13 +9,7 @@ import {
   PlaySquareOutlined,
   LoadingOutlined,
 } from '@ant-design/icons'
-import {
-  type SongRecord,
-  fetchMusic_autoRetry,
-  isResultError,
-} from '@/music/fetch'
-import { lyric } from '@/music/fetch/netease'
-import { Play } from '@/music/play'
+import type { SongRecord } from '@/music/fetch'
 import usePlay from '@/hooks/use-play'
 import Image from '@/components/image'
 import styles from './list.module.scss'
