@@ -15,13 +15,13 @@ export class Ipc {
     ipcMain.handle(IPC.登录, async (_, args) => {
       try {
         const { username, password } = args
-        const isExist = (await sql.select('user', `WHERE username = '${username}'`)).length !== 0
-        const res = await sql.select('user', `WHERE username = '${username}' AND password = '${password}'`)
-        if (res && res.length) {
+        const isExist = (await sql.selectOne('user', `WHERE username = '${username}'`)).length !== 0
+        const res = await sql.selectOne('user', `WHERE username = '${username}' AND password = '${password}'`)
+        if (res) {
           return {
             code: 1,
             msg: '登录成功',
-            data: res[0],
+            data: res,
           };
         } else {
           return {
@@ -54,9 +54,14 @@ export class Ipc {
         const { listName, userId } = args
         const createTime = moment().format('yyyy-MM-DD hh:mm:ss');
         const updateTime = createTime;
-        console.log('创建歌单', {listName, userId, createTime, updateTime})
-        const res = await sql.insert('songList', {listName, userId, createTime, updateTime})
-        if (res) {
+        const isExist = await sql.selectOne('songList', `WHERE listName = '${listName}'`)
+        if (isExist) {
+          return {
+            code: 0,
+            msg: '歌单名称重复',
+          }
+        }else {
+          const res = await sql.insert('songList', {listName, userId, createTime, updateTime})
           return {
             code: 1,
             msg: res,
