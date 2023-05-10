@@ -33,11 +33,11 @@ export class Sql {
   }
 
   objKey(obj: Record<any, any>) {
-    return JSON.stringify(Object.keys(obj).join(',')).replace(/[\[\]]/g, '')
+    return JSON.stringify(Object.keys(obj)).replace(/[\[\]]/g, '')
   }
 
   objVaule(obj: Record<any, any>) {
-    return JSON.stringify(Object.values(obj).join(',')).replace(/[\[\]]/g, '')
+    return JSON.stringify(Object.values(obj)).replace(/[\[\]]/g, '')
   }
 
   // DML
