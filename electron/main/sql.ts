@@ -74,14 +74,26 @@ export class Sql {
   }
 
   // DQL
-  select(tabelname: string, statement: string): Promise<any[]> {
+  selectAll(tabelname: string, statement: string): Promise<any[]> {
     return new Promise((resolve, reject) => {
       this.database.all(`SELECT * FROM ${tabelname} ${statement}`, [], function (err, rows) {
         if (err) {
           reject(`find error: ${err}`)
         }
-        console.log('select', rows)
+        console.log('select all', rows)
         resolve(rows);
+      })
+    })
+  }
+
+  selectOne(tabelname: string, statement: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.database.get(`SELECT * FROM ${tabelname} ${statement}`, [], function (err, row) {
+        if (err) {
+          reject(`find error: ${err}`)
+        }
+        console.log('select one', row)
+        resolve(row);
       })
     })
   }
