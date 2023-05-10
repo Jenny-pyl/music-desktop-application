@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Drawer } from 'antd'
+import { useState } from 'react'
+import { Drawer, Spin } from 'antd'
 import { CloseCircleOutlined } from '@ant-design/icons'
 import {
   BofangIcon,
@@ -16,26 +16,32 @@ import styles from './controller.module.scss'
 export function ControllerPlay() {
   const { color } = useGlobalColor()
   const {
+    fetching,
+    loading,
     playing,
     song,
     play,
     pause,
+    prev,
+    next,
   } = usePlay()
 
   return (
-    <div
-      className={[styles['controller-play'], 'd-flex align-items-center justify-content-around'].join(' ')}
-      style={{ color }}
-    >
-      <ShangyishouIcon />
-      <span className='play-pause'>
-        {playing
-          ? <ZantingIcon onClick={pause} />
-          : <BofangIcon onClick={() => song && play(song)} />
-        }
-      </span>
-      <XiayishouIcon />
-    </div>
+    <Spin spinning={!!fetching || !!loading}>
+      <div
+        className={[styles['controller-play'], 'd-flex align-items-center justify-content-around'].join(' ')}
+        style={{ color }}
+      >
+        <ShangyishouIcon onClick={prev} />
+        <span className='play-pause'>
+          {playing
+            ? <ZantingIcon onClick={pause} />
+            : <BofangIcon onClick={() => song && play(song)} />
+          }
+        </span>
+        <XiayishouIcon onClick={next} />
+      </div>
+    </Spin>
   )
 }
 
@@ -44,22 +50,10 @@ export function ControllerPanel(props: {
 }) {
   const {
     song,
-    lyric,
+    lyricLines,
+    lyricActiveLine,
     playing,
-    playInfo,
   } = usePlay()
-  const lyricLines = useMemo(() => lyric ? parseLyric(lyric) : [], [lyric])
-  const activeLine = useMemo(() => {
-    let closest = lyricLines[0]
-    const seek = playInfo?.seek ?? 0
-    const delay = 4
-    for (const line of lyricLines) {
-      if (Math.abs(line.time - seek) < Math.abs(closest.time - seek) - delay) {
-        closest = line
-      }
-    }
-    return closest
-  }, [lyricLines, playInfo?.seek])
 
   return (
     <div className={[styles['controller-panel'], 'd-flex flex-column h-100'].join(' ')}>
@@ -89,7 +83,7 @@ export function ControllerPanel(props: {
             {lyricLines.map((line, idx) => (
               <div
                 key={idx}
-                className={['lyric-line', activeLine === line && 'active'].filter(Boolean).join(' ')}
+                className={['lyric-line', lyricActiveLine === line && 'active'].filter(Boolean).join(' ')}
               >
                 <span className='line-text'>{line.text}</span>
               </div>
@@ -128,8 +122,9 @@ export function ControllerProcess() {
 
 export function FooterController() {
   const {
-    playing,
     song,
+    playing,
+    lyricActiveLine,
   } = usePlay()
   const [visiblePanel, setVisiblePanel] = useState(false)
 
@@ -139,15 +134,18 @@ export function FooterController() {
         <ControllerProcess />
       </div>
       <div className='bar d-flex align-items-center justify-content-center h-100'>
-        <div className='bar-left d-flex align-items-center'>
+        <div className='bar-left d-flex align-items-center text-truncate'>
           <span
             className={['song-img cursor-pointer ml-3', playing && 'animate-rotate'].filter(Boolean).join(' ')}
             onClick={() => setVisiblePanel(!visiblePanel)}
           >
             <Image src={song?.img_url} />
           </span>
-          <span className='song-author ml-3'>
+          <span className='song-author ml-2'>
             {song ? `${song.title}: ${song.artist}` : '--'}
+          </span>
+          <span className='song-lyric ml-2'>
+            {lyricActiveLine?.text}
           </span>
         </div>
         <ControllerPlay />
@@ -171,46 +169,4 @@ export function FooterController() {
       </Drawer>
     </div>
   )
-}
-
-// ------------------------------------------------------------------------------
-
-// https://dev.to/mcanam/javascript-lyric-synchronizer-4i15
-// lrc (String) - lrc file text
-function parseLyric(lrc: string) {
-  // will match "[00:00.00] ooooh yeah!" or "[00:00.0000] ooooh yeah!"
-  // note: i use named capturing group
-  const regex = /^\[(?<time>\d{2}:\d{2}(.\d{2,4})?)\](?<text>.*)/;
-
-  // split lrc string to individual lines
-  const lines = lrc.split("\n");
-
-  const output: { time: number, text: string }[] = [];
-
-  lines.forEach(line => {
-    const match = line.match(regex);
-
-    // if doesn't match, return.
-    if (match == null) return;
-
-    const { time, text } = match.groups!;
-
-    output.push({
-      time: parseTime(time),
-      text: text.trim()
-    });
-  });
-
-  return output;
-}
-
-// parse formated time
-// "03:24.73" => 204.73 (total time in seconds)
-function parseTime(time: string) {
-  const minsec = time.split(":");
-
-  const min = parseInt(minsec[0]) * 60;
-  const sec = parseFloat(minsec[1]);
-
-  return min + sec;
 }
