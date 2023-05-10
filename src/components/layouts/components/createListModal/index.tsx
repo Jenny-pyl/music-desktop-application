@@ -17,9 +17,8 @@ const CreateListModal: FC<{
       if(res.code === 0) {
         message.error(res.msg);
       } else {
-        message.success({
-          content: res.msg,
-        });
+        setModalOpen(false);
+        message.success(res.msg);
       }
     })
   }
@@ -27,7 +26,6 @@ const CreateListModal: FC<{
   return (<Modal
     title='新建歌单'
     okText='创建'
-    cancelText='取消'
     closable={false}
     open={modalOpen}
     onCancel={() => setModalOpen(false)}
