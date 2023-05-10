@@ -14,6 +14,7 @@ import {
   Avatar,
   Dropdown,
   Menu,
+  Modal,
 } from 'antd'
 import {
   LeftOutlined,
@@ -55,6 +56,8 @@ const Layouts: FC = () => {
   const userInfo = locaStorage.get<UserInfo | null>('userInfo');
   const [activeMenuKey, setActiveMenuKey] = useState<string>(ROUTER_PATH.home);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  // 避免按钮不适用主题色
+  const [modal, contextHolder] = Modal.useModal();
 
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
@@ -64,6 +67,20 @@ const Layouts: FC = () => {
 
   const loginRedirect = () => {
     navigate('/login')
+  }
+
+  const handleCreate = () => {
+    if (!userInfo?.id) {
+      modal.confirm({
+        title: '您还未登录',
+        content: '确定跳转至登录页面',
+        onOk() {
+          navigate('/login')
+        },
+      })
+    } else {
+      setModalOpen(true)
+    }
   }
 
   const skinItems = useMemo(() => themeItems!.map(({ label, key }) => ({
@@ -134,7 +151,7 @@ const Layouts: FC = () => {
             items={[...menuItems!, {
               label: (<div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>我创建的歌单</div>
-                <PlusOutlined onClick={() => setModalOpen(true)} />
+                <PlusOutlined onClick={() => handleCreate()} />
               </div>),
               key: 'myCreate',
               // icon: <LiebiaoIcon />,
@@ -163,7 +180,8 @@ const Layouts: FC = () => {
       <div className="footer">
         <FooterController />
       </div>
-      <CreateListModal modalOpen={modalOpen} setModalOpen={setModalOpen} />
+      <CreateListModal modalOpen={modalOpen} setModalOpen={setModalOpen}/>
+      {contextHolder}
     </div>
   )
 }
