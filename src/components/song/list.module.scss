@@ -18,6 +18,10 @@
       &:hover {
         color: inherit;
       }
+
+      &.active {
+        color: cyan;
+      }
     }
 
     .song-portrait {

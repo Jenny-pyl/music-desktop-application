@@ -4,8 +4,15 @@ import {
 } from 'howler'
 
 export interface PlayOptions extends HowlOptions {
+  /** Music ID */
+  mid: string | number
   lyric: string
-  event: (name: EvnetName, player: Player) => void
+  /**
+   * - `pause` 从暂停恢复
+   * - `stop` 从头开始 
+   */
+  mode?: 'pause' | 'stop'
+  event: (name: EventName, player: Player) => void
   interval: (args: {
     timestamp: number
     player: Player
@@ -13,6 +20,8 @@ export interface PlayOptions extends HowlOptions {
 }
 
 export interface Player {
+  /** Music ID */
+  mid: string | number
   src: HowlOptions['src']
   lyric: string
   player: Howl
@@ -20,7 +29,7 @@ export interface Player {
   timestamp: number
 }
 
-export type EvnetName =
+export type EventName =
   | 'load'
   | 'loaderror'
   | 'playerror'
@@ -35,30 +44,48 @@ export type EvnetName =
   | 'fade'
   | 'unlock'
 
+export const EVENT: {
+  play: EventName[]
+  unPlay: EventName[]
+  unLoading: EventName[]
+} = {
+  play: [
+    'play',
+  ],
+  unPlay: [
+    'loaderror',
+    'playerror',
+    'end',
+    'pause',
+    'stop',
+  ],
+  unLoading: [
+    'play',
+    'load',
+    'loaderror',
+  ],
+}
+
 /**
  * 单例模式更加可控
  */
 export class Play {
   private constructor() { }
-  private static players: Player[] = []
   private static options: PlayOptions
-  private static interval: PlayOptions['interval']
   private static interval_timer: any
   private static interval_ms = 1000
 
+  public static players: Player[] = []
+
   private static event(...args: Parameters<PlayOptions['event']>) {
+    /*
     const [name, player] = args
-    if (([
-      'loaderror',
-      'playerror',
-      'end',
-      'pause',
-      'stop',
-    ] as EvnetName[]).includes(name)) {
+    if (event.unPlay.includes(name)) {
       clearTimeout(this.interval_timer)
     } else if (name === 'play') {
       this.runInterval(player)
     }
+    */
 
     this.options.event(...args)
   }
@@ -79,14 +106,18 @@ export class Play {
     player.player.on('unlock', () => this.event('unlock', player))
   }
 
-  private static runInterval(player: Player) {
-    const _this = this;
+  private static runInterval() {
+    const _this = this
+    clearTimeout(_this.interval_timer);
     (function callback() {
       _this.interval_timer = setTimeout(() => {
-        _this.options.interval({
-          timestamp: Date.now(),
-          player,
-        })
+        const player = _this.getActivePlayer()
+        if (player && player.player.playing()) {
+          _this.options.interval({
+            timestamp: Date.now(),
+            player,
+          })
+        }
         callback()
       }, _this.interval_ms)
     })()
@@ -94,6 +125,7 @@ export class Play {
 
   public static play(options: PlayOptions) {
     this.options = options
+    this.runInterval()
 
     const index = this.players.findIndex(item => item.src === options.src)
     let player: Player
@@ -108,6 +140,7 @@ export class Play {
           html5: true, // Force to HTML5 so that the audio can stream in (best for large files).
         }),
         active: true,
+        mid: options.mid,
         src: options.src,
         lyric: options.lyric,
       }
@@ -115,7 +148,10 @@ export class Play {
       this.players.push(player)
     }
 
-    this.pause()
+    if (this.getActivePlayer() !== player) {
+      this.stop()
+    }
+
     this.setActivePlayer(player)
     player.player.play()
 
@@ -136,9 +172,23 @@ export class Play {
     }
   }
 
-  public static pause() {
-    for (const player of this.players) {
-      player.player.playing() && player.player.stop()
+  public static pause(player?: Player) {
+    if (player) {
+      player.player.pause()
+    } else {
+      for (const player of this.players) {
+        player.player.playing() && player.player.pause()
+      }
+    }
+  }
+
+  public static stop(player?: Player) {
+    if (player) {
+      player.player.pause()
+    } else {
+      for (const player of this.players) {
+        player.player.playing() && player.player.stop()
+      }
     }
   }
 }
