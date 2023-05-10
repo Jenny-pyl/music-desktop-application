@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom/client'
 import { ConfigProvider } from 'antd'
 import { RouterProvider } from 'react-router-dom'
+import zhCN from 'antd/locale/zh_CN';
 import router from './routes/router'
 import { useGlobalColor } from './store'
 
@@ -12,6 +13,7 @@ const RootNode = () => {
   // const color = '#73d13d'
   return (
     <ConfigProvider
+      locale={zhCN}
       theme={{
         token: {
           colorPrimary: color,
