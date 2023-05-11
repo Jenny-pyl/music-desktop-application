@@ -15,15 +15,11 @@
 
 ## 🎞 项目展示
 
-<img wdith="700px" scr="https://github.com/Jenny-pyl/music-desktop-application/blob/main/screenshot/play.png?raw=true" />
+![play.png](https://github.com/Jenny-pyl/music-desktop-application/blob/main/screenshot/play.png?raw=true)
 
-<br/>
+![find-music.png](https://github.com/Jenny-pyl/music-desktop-application/blob/main/screenshot/find-music.png?raw=true)
 
-<img wdith="700px" scr="https://github.com/Jenny-pyl/music-desktop-application/blob/main/screenshot/find-music.png?raw=true" />
-
-<br/>
-
-<img wdith="700px" scr="https://github.com/Jenny-pyl/music-desktop-application/blob/main/screenshot/search.png?raw=true" />
+![search.png](https://github.com/Jenny-pyl/music-desktop-application/blob/main/screenshot/search.png?raw=true)
 
 ## 🔥 技术框架
 
