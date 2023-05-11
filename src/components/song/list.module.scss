@@ -1,5 +1,18 @@
 .song-list-table {
   :global {
+    .ant-table-row.active-playing {
+      background-color: var(--primary-color-01);
+      color: var(--primary-color);
+
+      .song-play-icon {
+        color: var(--primary-color);
+      }
+
+      td {
+        border-color: transparent;
+      }
+    }
+
     tr {
       color: #666;
       font-size: 12px;

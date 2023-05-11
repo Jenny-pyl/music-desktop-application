@@ -4,6 +4,7 @@ import { Input, message } from 'antd'
 import { create } from 'zustand'
 import type { SearchResult, SongRecord } from '@/music/fetch'
 import SongList from '@/components/song/list'
+import usePlay from '@/hooks/use-play'
 import { query2search, search2query } from '@/utils'
 import { ROUTER_PATH } from '@/routes/router'
 import { searchMusic as searchNetease } from '@/music/fetch/netease'
@@ -40,6 +41,7 @@ export function SongSearch() {
     setLoading,
     setData,
   } = useSearchStore()
+  const { setSongList } = usePlay()
 
   const searchMusic = async (value: string) => {
     if (!value) {
@@ -57,7 +59,10 @@ export function SongSearch() {
 
     setLoading(true)
     searchNetease({ keywords })
-      .then(setData)
+      .then(data => {
+        setSongList(data.list as SongRecord[])
+        setData(data)
+      })
       .finally(() => setLoading(false))
   }, [keywords])
 
