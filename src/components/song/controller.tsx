@@ -10,11 +10,9 @@ import {
 } from '@/components/icons'
 import Image from '@/components/image'
 import usePlay from '@/hooks/use-play'
-import { useGlobalColor } from '@/store'
 import styles from './controller.module.scss'
 
 export function ControllerPlay() {
-  const { color } = useGlobalColor()
   const {
     fetching,
     loading,
@@ -34,10 +32,7 @@ export function ControllerPlay() {
 
   return (
     <Spin spinning={!!fetching || !!loading}>
-      <div
-        className={[styles['controller-play'], 'd-flex align-items-center justify-content-around'].join(' ')}
-        style={{ color }}
-      >
+      <div className={[styles['controller-play'], 'd-flex align-items-center justify-content-around'].join(' ')}>
         <ShangyishouIcon onClick={prev} />
         <span className='play-pause'>
           {playing
@@ -136,7 +131,6 @@ export function ControllerPanel(props: {
 }
 
 export function ControllerProcess() {
-  const { color } = useGlobalColor()
   const {
     playInfo,
   } = usePlay()
@@ -145,10 +139,7 @@ export function ControllerProcess() {
     <div className={[styles['controller-process'], 'h-100'].join(' ')}>
       <div
         className='process-bar h-100'
-        style={{
-          backgroundColor: color,
-          width: `${(playInfo?.percent ?? 0) * 100}%`,
-        }}
+        style={{ width: `${(playInfo?.percent ?? 0) * 100}%` }}
       />
     </div>
   )
@@ -184,7 +175,7 @@ export function FooterController() {
         </div>
         <ControllerPlay />
         <div className='bar-right d-flex align-items-center'>
-          <span className='like'>
+          <span className='like cursor-pointer'>
             <AixinIcon />
           </span>
         </div>
