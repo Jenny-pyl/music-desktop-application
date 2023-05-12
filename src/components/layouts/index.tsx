@@ -61,8 +61,6 @@ const Layouts: FC = () => {
   const [modal, contextHolder] = Modal.useModal();
   const [songList] = useSongList(userInfo?.id);
 
-  console.log('songList', songList);
-
   const menuItemClick: MenuProps['onClick'] = (e) => {
     const pathname = Number.isInteger(+e.keyPath[0]) ? `/myCreate/${e.key}` : e.key;
     setActiveMenuKey(e.key)
