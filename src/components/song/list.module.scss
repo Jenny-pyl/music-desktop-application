@@ -46,3 +46,13 @@
     }
   }
 }
+
+:global {
+  .clickMenu {
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+  }
+  .clickMenu.ant-menu-light.ant-menu-root.ant-menu-vertical {
+    border-inline-end: 1px solid var(--primary-color) !important;
+  }
+}

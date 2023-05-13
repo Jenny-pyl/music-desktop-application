@@ -91,5 +91,47 @@ export class Ipc {
         }
       }
     })
+
+    ipcMain.handle(IPC.添加音乐到我的喜欢, async (_, args) => {
+      try {
+        const { userId, songInfo } = args
+        const isExist = await sql.selectOne('likeSong', `WHERE mid = '${songInfo.mid}' AND userId = ${userId}`)
+        if (isExist) {
+          return {
+            code: 0,
+            msg: '该歌曲已在喜欢列表',
+          }
+        } else {
+          const res = await sql.insert('likeSong', { userId, ...songInfo })
+          return {
+            code: 1,
+            msg: res,
+          };
+        }
+      } catch (e) {
+        return {
+          code: 0,
+          msg: e,
+        }
+      }
+    })
+
+    ipcMain.handle(IPC.获取我的喜欢音乐列表, async (_, args) => {
+      try {
+        const { userId } = args
+        const res = await sql.selectAll('likeSong', `WHERE userId = '${userId}'`)
+        return {
+          code: 1,
+          msg: '成功',
+          data: res,
+        };
+      } catch (e) {
+        return {
+          code: 0,
+          msg: e,
+        }
+      }
+    })
+
   }
 }
