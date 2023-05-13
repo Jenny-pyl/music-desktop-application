@@ -35,11 +35,6 @@ export const menuItems: MenuProps['items'] = [
     label: '我喜欢的音乐',
     icon: <AixinIcon />,
   },
-  {
-    key: '/myCollect',
-    label: '我的收藏',
-    icon: <ShoucangIcon />,
-  },
   { type: 'divider' },
 ]
 

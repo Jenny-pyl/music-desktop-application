@@ -174,11 +174,11 @@ export function FooterController() {
           </span>
         </div>
         <ControllerPlay />
-        <div className='bar-right d-flex align-items-center'>
+        {/* <div className='bar-right d-flex align-items-center'>
           <span className='like cursor-pointer'>
             <AixinIcon />
           </span>
-        </div>
+        </div> */}
       </div>
 
       <Drawer

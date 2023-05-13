@@ -124,13 +124,12 @@ const Layouts: FC = () => {
           <div className='search'>
             <SongSearch />
           </div>
-          <ShezhiIcon className='setting' />
           <Dropdown
             overlayClassName='skin-menu'
             menu={{ items: skinItems }}
             arrow
           >
-            <PifuIcon />
+            <PifuIcon style={{ marginLeft: 10}}/>
           </Dropdown>
         </div>
       </div>

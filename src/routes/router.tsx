@@ -37,10 +37,6 @@ const router = createHashRouter([
         element: <MyPrefer />
       },
       {
-        path: 'myCollect',
-        element: <MyCollect />
-      },
-      {
         path: 'myCreate/:id',
         element: <MyCreate />,
       },
