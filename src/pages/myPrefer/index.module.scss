@@ -1,5 +1,15 @@
 .download {
   :global {
-    
+    .search-info {
+      position: relative;
+      box-shadow: 0 0 10px -4px rgba(140, 140, 140, .4);
+      z-index: 1;
+    }
+
+    .play-list {
+      height: 0;
+      flex-grow: 1;
+      overflow: auto;
+    }
   }
 }

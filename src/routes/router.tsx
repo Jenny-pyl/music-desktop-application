@@ -5,7 +5,6 @@ import PersonalFM from "@/pages/personalFM";
 import Singer from "@/pages/singer";
 import Download from "@/pages/download";
 import MyPrefer from "@/pages/myPrefer";
-import MyCollect from "@/pages/myCollect";
 import MyCreate from "@/pages/myCreate";
 import Login from "@/pages/login";
 import Search from "@/pages/search";

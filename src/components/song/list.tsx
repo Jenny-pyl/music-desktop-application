@@ -53,9 +53,19 @@ export default (props: TableProps<SongRecord>) => {
     }
   }
 
+  console.log('omit', omit)
+
   const classfiyMusic = (info: MenuInfo) => {
     if(info.key === 'like') {
       window.ipcRenderer.invoke(IPC.添加音乐到我的喜欢, { userId: userInfo?.id, songInfo: selectedRow }).then(res => {
+        if(res.code === 1) {
+          message.success('添加成功')
+        }else {
+          message.error(res.msg)
+        }
+      })
+    }else {
+      window.ipcRenderer.invoke(IPC.添加音乐到我的歌单, { userId: userInfo?.id, listId: info.key, songInfo: selectedRow }).then(res => {
         if(res.code === 1) {
           message.success('添加成功')
         }else {

@@ -29,7 +29,7 @@ const myPrefer: FC = () => {
       return;
     }
     window.ipcRenderer.invoke(IPC.获取我的喜欢音乐列表, { userId: userInfo?.id }).then(res => {
-      if(res.code === 1) {
+      if (res.code === 1) {
         setSongList(res.data)
       }
     }).finally(() => setLoading(false))
@@ -37,15 +37,15 @@ const myPrefer: FC = () => {
 
   return <div className={style.myPrefer}>
     <div className='search-info p-2'>
-        <h2 className='mb-0'>我喜欢的音乐</h2>
-      </div>
-      <div className='play-list p-2'>
-        <SongList
-          loading={loading}
-          dataSource={songList as SongRecord[]}
-        />
-      </div>
-      {contextHolder}
+      <h2 className='mb-0'>我喜欢的音乐</h2>
+    </div>
+    <div className='play-list p-2'>
+      <SongList
+        loading={loading}
+        dataSource={songList as SongRecord[]}
+      />
+    </div>
+    {contextHolder}
   </div>
 }
 
