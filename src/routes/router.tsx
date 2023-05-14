@@ -1,8 +1,7 @@
 import { createHashRouter } from "react-router-dom";
 import Layouts from "@/components/layouts";
 import FindMusic from "@/pages/findMusic";
-import PersonalFM from "@/pages/personalFM";
-import Singer from "@/pages/singer";
+import MyCollect from "@/pages/myCollect";
 import Download from "@/pages/download";
 import MyPrefer from "@/pages/myPrefer";
 import MyCreate from "@/pages/myCreate";
@@ -20,12 +19,8 @@ const router = createHashRouter([
         element: <FindMusic />
       },
       {
-        path: 'personalFM',
-        element: <PersonalFM />
-      },
-      {
-        path: 'singer',
-        element: <Singer />
+        path: 'myCollect',
+        element: <MyCollect />
       },
       {
         path: 'download',

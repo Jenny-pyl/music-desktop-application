@@ -1,8 +1,6 @@
 import type { MenuProps } from 'antd';
 import {
   YinYue1Icon,
-  ShouyinjiIcon,
-  GuanzhuIcon,
   XiazaiIcon,
   AixinIcon,
   ShoucangIcon,
@@ -15,14 +13,9 @@ export const menuItems: MenuProps['items'] = [
     icon: <YinYue1Icon />,
   },
   {
-    key: '/personalFM',
-    label: '私人电台',
-    icon: <ShouyinjiIcon />,
-  },
-  {
-    key: '/singer',
-    label: '歌手',
-    icon: <GuanzhuIcon />,
+    key: '/myCollect',
+    label: '收藏',
+    icon: <ShoucangIcon />,
   },
   { type: 'divider' },
   {
