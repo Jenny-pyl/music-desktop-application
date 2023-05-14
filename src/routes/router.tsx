@@ -20,7 +20,7 @@ const router = createHashRouter([
       },
       {
         path: 'myCollect',
-        element: <MyCollect />
+        element: <FindMusic />
       },
       {
         path: 'download',

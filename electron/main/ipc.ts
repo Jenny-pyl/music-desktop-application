@@ -175,5 +175,46 @@ export class Ipc {
         }
       }
     })
+
+    ipcMain.handle(IPC.添加歌单到我的收藏, async (_, args) => {
+      try {
+        const { userId, listInfo } = args
+        const isExist = await sql.selectOne('collectList', `WHERE dissId = '${listInfo.dissId}' AND userId = ${userId}`)
+        if (isExist) {
+          return {
+            code: 0,
+            msg: `该歌单已收藏`,
+          }
+        } else {
+          const res = await sql.insert('collectList', { userId, ...listInfo })
+          return {
+            code: 1,
+            msg: res,
+          };
+        }
+      } catch (e) {
+        return {
+          code: 0,
+          msg: e,
+        }
+      }
+    })
+
+    ipcMain.handle(IPC.获取我的收藏, async (_, args) => {
+      try {
+        const { userId } = args
+        const res = await sql.selectAll('collectList', `WHERE userId = ${userId}`)
+        return {
+          code: 1,
+          msg: '成功',
+          data: res,
+        };
+      } catch (e) {
+        return {
+          code: 0,
+          msg: e,
+        }
+      }
+    })
   }
 }
