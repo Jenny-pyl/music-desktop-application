@@ -1,0 +1,60 @@
+.cd-list {
+  // https://stackoverflow.com/questions/18744164/flex-box-align-last-row-to-grid
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+
+  &:after {
+    content: '';
+    flex: auto;
+  }
+
+  :global {
+    .cd-info {
+      position: relative;
+      box-shadow: 0 0 10px -4px rgba(140, 140, 140, .4);
+      z-index: 1;
+    }
+
+    .cd-list-item {
+      width: 13.4vw;
+      overflow: hidden;
+      margin: .7vw .4vw;
+      border-radius: 4px;
+      border: 1px solid #efefef;
+      transition: 400ms;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--primary-color);
+
+        img {
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    .cd-cover-img {
+      position: relative;
+      padding-bottom: 100%; // 得到一个自适应宽度的正方形
+      overflow: hidden;
+
+      img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        object-fit: contain;
+        object-position: center;
+        transition: 400ms;
+      }
+    }
+
+    .cd-title {
+      padding: 7px 4px;
+      font-size: 12px;
+      color: #666;
+      box-shadow: 0 -1px 1px rgba(239, 239, 239, .7);
+    }
+  }
+}

@@ -12,29 +12,34 @@ import { FolderAddOutlined } from '@ant-design/icons'
 import { IPC } from '@common/constants'
 import { UserInfo } from '@/components/layouts'
 
+export interface QueryInfo {
+  disstid: string
+  from: 'findMusic' | 'myCollect'
+  record: string
+}
+
 export default () => {
   const location = useLocation()
   const userInfo = locaStorage.get<UserInfo | null>('userInfo')
-  const query = search2query(location.search) as { disstid: string; from: string; record: string }
+  const query = search2query(location.search) as unknown as QueryInfo
   const [loading, setLoading] = useState(false)
   const [disc, setDisc] = useState<DiscResult>()
   const { setSongList } = usePlay()
 
-  const fromCollect = query.from === 'collect'
+  const fromCollect = query.from === 'myCollect'
 
   const addCollect = () => {
-    console.log('addCollect')
-    window.ipcRenderer.invoke(IPC.添加歌单到我的收藏, { userId: userInfo?.id , listInfo: JSON.parse(query.record) }).then(res => {
-      if(res.code === 1) {
+    window.ipcRenderer.invoke(IPC.添加歌单到我的收藏, { userId: userInfo?.id, listInfo: JSON.parse(query.record) }).then(res => {
+      if (res.code === 1) {
         message.success('添加成功')
-      }else {
+      } else {
         message.error(res.msg)
       }
     })
   }
 
   useEffect(() => {
-    setLoading(true)
+    console.log('query.disstid', query)
     getDisc(query.disstid)
       .then(disc => {
         setSongList(disc.list)
@@ -53,12 +58,12 @@ export default () => {
         </div>
         <div className='play-info-details p-2'>
           <h2>{disc?.info.title}</h2>
-          {!fromCollect
-            ?<Button
-              icon={<FolderAddOutlined/>}
+          {fromCollect
+            ? null
+            : <Button
+              icon={<FolderAddOutlined />}
               onClick={addCollect}
-            >收藏</Button>
-            : null}
+            >收藏</Button>}
         </div>
       </div>
       <div className='play-list p-2'>

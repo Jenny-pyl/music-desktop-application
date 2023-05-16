@@ -179,7 +179,7 @@ export class Ipc {
     ipcMain.handle(IPC.添加歌单到我的收藏, async (_, args) => {
       try {
         const { userId, listInfo } = args
-        const isExist = await sql.selectOne('collectList', `WHERE dissId = '${listInfo.dissId}' AND userId = ${userId}`)
+        const isExist = await sql.selectOne('collectList', `WHERE dissid = '${listInfo.dissid}' AND userId = ${userId}`)
         if (isExist) {
           return {
             code: 0,

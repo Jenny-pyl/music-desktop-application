@@ -1,5 +1,15 @@
 .myCollect {
   :global {
-    
+    .cd-info {
+      position: relative;
+      box-shadow: 0 0 10px -4px rgba(140, 140, 140, .4);
+      z-index: 1;
+    }
+
+    .cd-list-wrap {
+      flex-grow: 1;
+      height: 0;
+      overflow: auto;
+    }
   }
 }

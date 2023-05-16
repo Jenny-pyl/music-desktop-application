@@ -53,8 +53,6 @@ export default (props: TableProps<SongRecord>) => {
     }
   }
 
-  console.log('omit', omit)
-
   const classfiyMusic = (info: MenuInfo) => {
     if(info.key === 'like') {
       window.ipcRenderer.invoke(IPC.添加音乐到我的喜欢, { userId: userInfo?.id, songInfo: selectedRow }).then(res => {
