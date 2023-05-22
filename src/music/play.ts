@@ -81,7 +81,7 @@ export class Play {
     const [name, player] = args
     if (EVENT.unPlay.includes(name)) {
       clearTimeout(this.interval_timer)
-    } else if (name === 'play') {
+    } else if (EVENT.play.includes(name)) {
       this.runInterval(player)
     }
 
@@ -182,7 +182,7 @@ export class Play {
 
   public static stop(player?: Player) {
     if (player) {
-      player.player.pause()
+      player.player.stop()
     } else {
       for (const player of this.players) {
         player.player.playing() && player.player.stop()
