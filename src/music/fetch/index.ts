@@ -255,8 +255,12 @@ export function getParameterByName(name: string, url: string) {
  * 多平台同时拉取音源，失败后自动重试其他平台酱紫 ⊙∀⊙！
  */
 export async function fetchMusic_autoRetry(options: FetchOptions): Promise<FetchResult> {
-  // https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L338-L403 - 多平台切换逻辑
+  const cache = fetchMusic_autoRetry.cache.get(options.mid)
+  if (cache) {
+    return cache
+  }
 
+  // https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/loweb.js#L338-L403 - 多平台切换逻辑
   let fetchResult = await (options.platform === 'qq' ? fetchQQ(options) : fetchNetease(options))
   if (isResultError(fetchResult)) {
     const fetchResultOk = await fetchAutoRetry(options)
@@ -268,7 +272,10 @@ export async function fetchMusic_autoRetry(options: FetchOptions): Promise<Fetch
   if (isResultError(fetchResult)) {
     // 多平台拉取均失败
     message.warning('VIP 音乐需要会员才可以播放哦 ^_^')
+  } else {
+    fetchMusic_autoRetry.cache.set(options.mid, fetchResult)
   }
 
   return fetchResult
 }
+fetchMusic_autoRetry.cache = new Map<FetchOptions['mid'], FetchResultOk>()

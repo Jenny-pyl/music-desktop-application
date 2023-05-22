@@ -315,6 +315,11 @@ export async function getDisc(dissid: string): Promise<DiscResult> {
  * @see https://github.com/listen1/listen1_chrome_extension/blob/v2.28.0/js/provider/netease.js#L535
  */
 export async function lyric(songmid: string | number): Promise<LyricResult> {
+  const cache = lyric.cache.get(songmid)
+  if (cache) {
+    return cache
+  }
+
   // use chrome extension to modify referer.
   const target_url = 'https://music.163.com/weapi/song/lyric?csrf_token=';
   const csrf = '';
@@ -339,11 +344,16 @@ export async function lyric(songmid: string | number): Promise<LyricResult> {
     tlrc = tlrc.replace(/[\u2005]+/g, ' ');
   }
 
-  return {
+  const result = {
     lyric: lrc,
     tlyric: tlrc,
   };
+
+  lyric.cache.set(songmid, result);
+
+  return result;
 }
+lyric.cache = new Map<string | number, LyricResult>();
 
 /**
  * 4.2 搜索音乐
