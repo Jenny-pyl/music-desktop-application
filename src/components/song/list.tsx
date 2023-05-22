@@ -1,11 +1,13 @@
-import { useState,CSSProperties } from 'react'
+import { useState, CSSProperties } from 'react'
 import {
   type TableProps,
   Table,
   Menu,
   MenuProps,
   message,
+  notification,
 } from 'antd'
+import { MenuInfo } from 'rc-menu/lib/interface'
 import {
   PictureOutlined,
   PauseCircleOutlined,
@@ -13,15 +15,20 @@ import {
   PlaySquareOutlined,
   LoadingOutlined,
 } from '@ant-design/icons'
-import { UserInfo } from '@/components/layouts'
-import type { SongRecord } from '@/music/fetch'
+import {
+  type SongRecord,
+  fetchMusic_autoRetry,
+  isResultError,
+} from '@/music/fetch'
+import { lyric as fetchLyric } from '@/music/fetch/netease'
 import usePlay from '@/hooks/use-play'
-import Image from '@/components/image'
 import { useSongList } from '@/hooks/use-songList'
 import { locaStorage } from '@/utils'
-import { IPC } from "@common/constants"
+import { IPC } from '@common/constants'
+import Image from '@/components/image'
+import type { UserInfo } from '@/components/layouts'
+import type { DownloadResult } from '@/pages/download/types'
 import styles from './list.module.scss'
-import { MenuInfo } from 'rc-menu/lib/interface'
 
 export default (props: TableProps<SongRecord>) => {
   const {
@@ -44,6 +51,7 @@ export default (props: TableProps<SongRecord>) => {
   const [isMenuVisiable, setIsMenuVisiable] = useState<boolean>(false);
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const [selectedRow, setSelectedRow] = useState<SongRecord>();
+  const [downloading, setDownloading] = useState(false);
 
   const clickPlay = async (song: SongRecord) => {
     if (playing === song) {
@@ -53,20 +61,52 @@ export default (props: TableProps<SongRecord>) => {
     }
   }
 
+  const clickDownload = async (song: SongRecord) => {
+    setDownloading(true)
+    const [
+      musicResult,
+      lyricResult,
+    ] = await Promise.all([
+      fetchMusic_autoRetry({
+        mid: song.mid,
+        title: song.title,
+        artist: song.artist,
+        platform: 'netease',
+      }),
+      fetchLyric(song.mid),
+    ])
+    if (!isResultError(musicResult)) {
+      const { error }: DownloadResult = await window.ipcRenderer.invoke(IPC.下载歌曲, {
+        song,
+        music: musicResult,
+        lyric: lyricResult,
+      })
+      if (error) {
+        notification.error({
+          message: '下载失败 =。=',
+          description: error.message,
+        })
+      } else {
+        message.success('下载成功 ^_^')
+      }
+    }
+    setDownloading(false)
+  }
+
   const classfiyMusic = (info: MenuInfo) => {
-    if(info.key === 'like') {
+    if (info.key === 'like') {
       window.ipcRenderer.invoke(IPC.添加音乐到我的喜欢, { userId: userInfo?.id, songInfo: selectedRow }).then(res => {
-        if(res.code === 1) {
+        if (res.code === 1) {
           message.success('添加成功')
-        }else {
+        } else {
           message.error(res.msg)
         }
       })
-    }else {
+    } else {
       window.ipcRenderer.invoke(IPC.添加音乐到我的歌单, { userId: userInfo?.id, listId: info.key, songInfo: selectedRow }).then(res => {
-        if(res.code === 1) {
+        if (res.code === 1) {
           message.success('添加成功')
-        }else {
+        } else {
           message.error(res.msg)
         }
       })
@@ -96,7 +136,7 @@ export default (props: TableProps<SongRecord>) => {
       return {
         ...attrs,
         className: [active && 'active-playing', attrs?.className].filter(Boolean).join(' '),
-        onDoubleClick(e){
+        onDoubleClick(e) {
           e.preventDefault()
           setIsMenuVisiable(true);
           setMenuStyle({
@@ -135,15 +175,26 @@ export default (props: TableProps<SongRecord>) => {
       {
         title: <PictureOutlined />,
         dataIndex: 'img_url',
-        render: text => (
+        render: value => (
           <div className='song-portrait'>
-            <Image src={text} />
+            <Image src={value} />
           </div>
         ),
       },
       {
         title: '歌名',
         dataIndex: 'title',
+        render: (value, record) => (
+          <div className='song-operate'>
+            <span
+              className='song-download'
+              onClick={() => downloading
+                ? message.info(`[${record.title}] 下载中 ^_^`)
+                : clickDownload(record)}
+            >{downloading ? '下载中' : '下载'}</span>
+            <span className='song-title'>{value}</span>
+          </div>
+        ),
       },
       {
         title: '歌手',

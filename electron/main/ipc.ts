@@ -1,4 +1,9 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import http from 'node:http'
+import https from 'node:https'
 import {
+  app,
   BrowserWindow,
   ipcMain,
   session,
@@ -6,6 +11,13 @@ import {
 import moment from 'moment'
 import { Sql } from './sql'
 import { IPC } from '@common/constants'
+import type {
+  DownloadOptions,
+  DownloadMeta,
+  DownloadResult,
+} from '@/pages/download/types'
+
+const downloadPath = path.join(app.getPath('userData'), 'downloads')
 
 export class Ipc {
   constructor(
@@ -166,7 +178,7 @@ export class Ipc {
         return {
           code: 1,
           msg: '成功',
-          data: {title: listObj.listName,list: res},
+          data: { title: listObj.listName, list: res },
         };
       } catch (e) {
         return {
@@ -215,6 +227,57 @@ export class Ipc {
           msg: e,
         }
       }
+    })
+
+    ipcMain.handle(IPC.下载歌曲, (_, args) => new Promise<DownloadResult>(async resolve => {
+      const {
+        song,
+        music,
+        lyric,
+      } = args as DownloadOptions
+      const targetPath = path.join(downloadPath, song.mid.toString())
+      !fs.existsSync(targetPath) && fs.mkdirSync(targetPath, { recursive: true })
+      const metaFile = path.join(targetPath, 'meta.json')
+      const musicFile = path.join(targetPath, `${song.title}.mp3`)
+      const request = (music.url.startsWith('https') ? https : http).get(music.url, res => {
+        res
+          .pipe(fs.createWriteStream(musicFile))
+          .on('error', error => {
+            resolve({ error })
+          })
+          .on('finish', () => {
+            const meta: DownloadMeta = {
+              song,
+              lyric,
+              music,
+              musicFile,
+              timestamp: Date.now(),
+            }
+            fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+            resolve({ error: null })
+          })
+          .on('close', () => {
+            request.destroy()
+          })
+      })
+    }))
+
+    ipcMain.handle(IPC.获取下载歌曲, () => {
+      const dirs = fs.readdirSync(downloadPath)
+      const metas: DownloadMeta[] = []
+      for (const dir of dirs) {
+        try {
+          const metaJson = path.join(downloadPath, dir, 'meta.json')
+          if (fs.existsSync(metaJson)) {
+            const jsonStr = fs.readFileSync(metaJson, 'utf8')
+            if (jsonStr) {
+              metas.push(JSON.parse(jsonStr))
+            }
+          }
+        } catch { }
+      }
+
+      return metas
     })
   }
 }

@@ -44,6 +44,26 @@
         box-shadow: 0 0 10px -4px rgba(51, 51, 51, 0.77);
       }
     }
+
+    .song-operate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 19vw;
+
+      .song-download {
+        color: var(--primary-color);
+        cursor: pointer;
+
+        &:active {
+          opacity: .7;
+        }
+      }
+
+      .song-title {
+        margin-left: 3px;
+      }
+    }
   }
 }
 
@@ -52,6 +72,7 @@
     border: 1px solid var(--primary-color);
     border-radius: 8px;
   }
+
   .clickMenu.ant-menu-light.ant-menu-root.ant-menu-vertical {
     border-inline-end: 1px solid var(--primary-color) !important;
   }
