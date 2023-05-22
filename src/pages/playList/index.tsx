@@ -39,7 +39,7 @@ export default () => {
   }
 
   useEffect(() => {
-    console.log('query.disstid', query)
+    setLoading(true)
     getDisc(query.disstid)
       .then(disc => {
         setSongList(disc.list)
